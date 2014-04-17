@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title></title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="assets/main.css">
+</head>
+<body>
+<div class="control row">
+    <input type="radio" name="listStyle" value="grid" rv-checked="view.type">Grid</input>
+    <input type="radio" name="listStyle" value="list" rv-checked="view.type">List</input>
+</div>
+<div class="scrollView row col scroll-y">
+    <div class="items row" rv-height="items.height">
+        <div class="item" rv-each-item="items" rv-top="item.top" rv-left="item.left">
+            <img rv-src="item.item.imgSrc">
+            <div class="inCartQty">
+                <img rv-src="item.item.imgSrc">
+                <div rv-text="item.item.inCartQty"></div>
+            </div>
+            <div class="description" rv-text="item.item.name"></div>
+            <div class="price" rv-text="item.item.price"></div>
+        </div>
+    </div>
+</div>
+
+<script src="rivets/dist/rivets.js"></script>
+<script src="litelist.bundled.js"></script>
+
+<script>
+    (function() {
+        var scrollView = document.querySelector(".scrollView");
+        var template   = document.querySelector(".items").cloneNode(true);
+        var control    = document.querySelector(".control");
+        var view       = {type: "grid"};
+        var rvScroller;
+
+        var rvView = rivets.bind(control, {view: view});
+
+        var scrollerOpts = {
+            grid: {
+                itemWidth:      200,
+                itemHeight:     300,
+                margin:         { x: 10, y: 10 },
+                maxBuffer:      50,
+                scrollView:     ".scrollView",
+                itemsContainer: ".items"
+            },
+
+            list: {
+                itemHeight:     40,
+                margin:         { x: 0, y: 0 },
+                maxBuffer:      50,
+                scrollView:     ".scrollView",
+                itemsContainer: ".items"
+            }
+        }
+
+        rivets.adapters['.'].subscribe(view, "type", function() {
+            if(rvScroller) { rvScroller.unbind(); }
+
+            scrollView.innerHTML = "";
+            scrollView.appendChild(template.cloneNode(true));
+            setupScroller(view.type);
+        });
+
+        function setupScroller(type) {
+            scrollView.classList.remove("grid", "list");
+            scrollView.classList.add(type);
+
+            rvScroller = new LiteList.RivetsLiteList(scrollerOpts[type]);
+
+            var i;
+            // Setup for demo
+            (function() {
+                var imgUrl = type === "grid" ? "http://placekitten.com/180/180?image="
+                        : "http://placekitten.com/35/35?image="
+                for(i = 0; i < 1000; ++i) {
+
+                    rvScroller.push({
+                        imgSrc:  imgUrl + (i%16),
+                        inCartQty: 1,
+                        name: "Item " + i,
+                        price: "0.00"
+                    });
+                }
+            })();
+        }
+
+        setupScroller("grid");
+        // For Demo
+//        setInterval(function() {
+//            rvScroller.push({
+//                imgSrc: "http://placekitten.com/180/180?image=" + (i%16),
+//                inCartQty: 1,
+//                name: "Item " + i++,
+//                price: "0.00"
+//            });
+//        }, 2000);
+    })();
+</script>
+</body>
+</html>

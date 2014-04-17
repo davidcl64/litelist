@@ -1,0 +1,18 @@
+{
+  "name": "litelist",
+  "version": "0.0.0",
+  "main": "dist/litelist.min.js",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test"
+  ],
+  "dependencies": {
+    "raf.js": "~0.0.3",
+    "tweenjs": "*"
+  },
+  "devDependencies": {
+    "rivets": "~0.6.7"
+  }
+}
