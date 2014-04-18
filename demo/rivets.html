@@ -21,10 +21,6 @@
     <div class="items row" rv-height="items.height">
         <div class="item" rv-each-item="items" rv-top="item.top" rv-left="item.left">
             <img rv-src="item.item.imgSrc">
-            <div class="inCartQty">
-                <img rv-src="item.item.imgSrc">
-                <div rv-text="item.item.inCartQty"></div>
-            </div>
             <div class="description" rv-text="item.item.name"></div>
             <div class="price" rv-text="item.item.price"></div>
         </div>
@@ -86,7 +82,6 @@
 
                     rvScroller.push({
                         imgSrc:  imgUrl + (i%16),
-                        inCartQty: 1,
                         name: "Item " + i,
                         price: "0.00"
                     });
@@ -99,7 +94,6 @@
 //        setInterval(function() {
 //            rvScroller.push({
 //                imgSrc: "http://placekitten.com/180/180?image=" + (i%16),
-//                inCartQty: 1,
 //                name: "Item " + i++,
 //                price: "0.00"
 //            });

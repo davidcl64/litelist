@@ -43,15 +43,6 @@ body.mainPage {
 */
 
 
-.fader .item {
-    opacity: 0;
-    -webkit-transform: scale3d(0.001, 0.001, 1);
-    -moz-transform: scale3d(0.001, 0.001, 1);
-    -ms-transform: scale3d(0.001, 0.001, 1);
-    -o-transform: scale3d(0.001, 0.001, 1);
-    transform: scale3d(0.001, 0.001, 1);
-}
-
 .grid .item {
     padding: 10px;
     float: left;
@@ -87,106 +78,18 @@ body.mainPage {
     transform: translate3d(0,0,0);
 }
 
-.grid .item .inCartQty {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    opacity: 0;
-    height: 60px;
-    width: 60px;
-    border-radius: 30px;
-    font-size: 30px;
-    line-height: 60px;
-    text-align: center;
-    background-color: rgba(100,255,100, .70);
-    overflow: hidden;
-    -webkit-transition: opacity .5s ease;
-    -moz-transition: opacity .5s ease;
-    -ms-transition: opacity .5s ease;
-    -o-transition: opacity .5s ease;
-    transition: opacity .5s ease;
-}
-
-.list .item .inCartQty {
-    position: absolute;
-    top: 2px;
-    right: 2px;
-    opacity: 0;
-    height: 35px;
-    width: 35px;
-    border-radius: 18px;
-    font-size: 17px;
-    line-height: 35px;
-    text-align: center;
-    background-color: rgba(100,255,100, .70);
-    overflow: hidden;
-    -webkit-transition: opacity .5s ease;
-    -moz-transition: opacity .5s ease;
-    -ms-transition: opacity .5s ease;
-    -o-transition: opacity .5s ease;
-    transition: opacity .5s ease;
-}
-
-.grid .item .inCartQty img {
-    position: absolute;
-    top: 0px;
-    right: -3px;
-    opacity: .3;
-    -webkit-filter: blur(6px);
-    -moz-filter: blur(6px);
-    -ms-filter: blur(6px);
-    -o-filter: blur(6px);
-    filter: blur(6px);
-}
-
-.list .item .inCartQty img {
-    display: none;
-}
-
-
-.grid .item.incart .inCartQty {
-    opacity: 1;
-}
-
-.list .item.incart .inCartQty {
-    opacity: 1;
-}
-
-.grid .item.incart .inCartQty div {
-    z-index: 10;
-}
-
-.list .item.incart .inCartQty div {
-    z-index: 10;
-}
-
-.grid .item img, .grid img.itemimg {
+.grid .item img {
     width: 180px;
     height: 180px;
 }
 
-.list .item img, .list img.itemimg {
+.list .item img {
     width: 35px;
     height: 35px;
 }
 
-.grid img.itemimg {
-    opacity: .5;
-    -webkit-transition: all .7s ease;
-    -moz-transition: all .7s ease;
-    -ms-transition: all .7s ease;
-    -o-transition: all .7s ease;
-    transition: all .7s ease;
-}
-
 .grid .item img {
     margin: 10px auto;
-}
-
-.grid img.itemimg.hide {
-    opacity: 0;
-    width: 20px;
-    height: 20px;
 }
 
 .grid .item .description {
