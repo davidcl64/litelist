@@ -107,8 +107,8 @@
                 viewItem.item = items[idx];
 
                 // If we have a dataSource
-                if(dataSource && dataSource.synch) {
-                    dataSource.synch(viewItem.id, viewItem.el, idx, items[idx]);
+                if(dataSource && dataSource.sync) {
+                    dataSource.sync(viewItem.id, viewItem.el, idx, items[idx]);
                 }
             }
         }
