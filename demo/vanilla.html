@@ -31,10 +31,12 @@
 
 <script>
     (function() {
-        var scrollView = document.querySelector(".scrollView");
-        var template   = document.querySelector(".items .item").cloneNode(true);
-        var control    = document.querySelector(".control");
-        var view       = {type: "grid"};
+        var scrollView      = document.querySelector(".scrollView");
+        var itemsContainer  = document.querySelector(".items");
+        var template        = document.querySelector(".items .item").cloneNode(true);
+        var control         = document.querySelector(".control");
+        var view            = {type: "grid"};
+        var viewTypeEls     = document.querySelectorAll(".control input[type='radio']");
         var rvScroller;
 
         var boundNodes = {};
@@ -83,6 +85,18 @@
                 itemTemplate:   template,
                 dataSource:     dataSource
             }
+        }
+
+        function viewChangeHandler(evt) {
+            if(rvScroller) { rvScroller.unbind(); }
+
+            scrollView.scrollTop = 0;
+            itemsContainer.innerHTML = "";
+            setupScroller(this.value);
+        }
+
+        for(var i = 0; i < viewTypeEls.length; ++i) {
+            viewTypeEls[i].addEventListener("click", viewChangeHandler);
         }
 
         function setupScroller(type) {
