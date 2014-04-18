@@ -796,6 +796,8 @@ TWEEN.Interpolation = {
         var margin          = opts.margin || { x: 0, y: 0 };
         var view            = document.querySelector(opts.scrollView);
         var itemsContainer  = opts.itemsContainer ? document.querySelector(opts.itemsContainer) : false;
+        var dataSource      = opts.dataSource || false;
+        var itemTemplate    = opts.itemTemplate || false;
         var scrollTop       = 0;
         var dirtyResize     = true;
         var ticking         = false;
@@ -808,16 +810,36 @@ TWEEN.Interpolation = {
             itemsContainer = view.children[0];
         }
 
-        function getInViewObj(item, idx) {
+        // Keep track of a unique id for viewItems - allows This is passed to
+        // datasource providers to aid in tracking.
+        var id = 0;
+        function createInViewObj(item, idx) {
             var row = Math.floor(idx/itemsPerRow);
             var col = (idx % itemsPerRow);
 
-            return {
+            var newViewObj = {
+                id:   id++,
                 top:  row * itemHeight + row * margin.y,
                 left: col * itemWidth  + col * margin.x,
                 idx:  idx,
                 item: item
             };
+
+            // If we were given an item template, we need to add a clone
+            // to the dom
+            if(itemTemplate) {
+                var newNode = itemTemplate.cloneNode(true);
+
+                itemsContainer.appendChild(newNode);
+                newViewObj.el = newNode;
+                if(dataSource && dataSource.bind) {
+                    dataSource.bind(newViewObj.id, newNode);
+                }
+
+                positionViewItem(newViewObj, true);
+            }
+
+            return newViewObj;
         }
 
         function calcViewMetrics() {
@@ -841,7 +863,7 @@ TWEEN.Interpolation = {
             return itemsInView.height;
         }
 
-        function positionViewItem(viewItem) {
+        function positionViewItem(viewItem, force) {
             var idx  = viewItem.idx;
             var row  = Math.floor(idx/itemsPerRow);
             var col  = (idx % itemsPerRow);
@@ -849,11 +871,31 @@ TWEEN.Interpolation = {
             var left = col * itemWidth  + col * margin.x;
 
             // Avoid triggering update if the value hasn't changed
-            if(viewItem.top  !== top ) { viewItem.top  = top;  }
-            if(viewItem.left !== left) { viewItem.left = left; }
+            if(force || (viewItem.top  !== top) ) {
+                viewItem.top  = top;
+
+                if(viewItem.el) {
+                    viewItem.el.style.top = top + "px";
+                }
+            }
+
+            if(force || (viewItem.left !== left)) {
+                viewItem.left = left;
+
+                if(viewItem.el) {
+                    viewItem.el.style.left = left + "px";
+                }
+            }
 
             // this is ok for just an instance check
-            if(viewItem.item !== items[idx]) { viewItem.item = items[idx]; }
+            if(force || (viewItem.item !== items[idx])) {
+                viewItem.item = items[idx];
+
+                // If we have a dataSource
+                if(dataSource && dataSource.sync) {
+                    dataSource.sync(viewItem.id, viewItem.el, idx, items[idx]);
+                }
+            }
         }
 
         var oldStart = 0;
@@ -897,17 +939,24 @@ TWEEN.Interpolation = {
                 var newRowsPerPage     = Math.ceil (newHeight / (itemHeight + margin.y));
                 var newItemsPerRow     = itemWidth ? Math.floor(newWidth  / (itemWidth  + margin.x)) : 1;
 
-                var i;
+                var i, removed;
                 if(newRowsPerPage !== rowsPerPage || newItemsPerRow !== itemsPerRow) {
                     calcViewMetrics();
                     calcDocHeight();
 
                     if(itemsInView.length > maxBuffer) {
-                        itemsInView.splice(0, itemsInView.length - maxBuffer);
+                        removed = itemsInView.splice(0, itemsInView.length - maxBuffer);
+
+                        if(dataSource && dataSource.unbind) {
+                            removed.forEach(function(inViewItem) {
+                                dataSource.unbind(inViewItem.id, inViewItem.el);
+                                itemsContainer.removeChild(inViewItem.el);
+                            });
+                        }
                     } else if(itemsInView.length < maxBuffer) {
                         var newItems = [-1, 0];
                         for(i = itemsInView.length; i < maxBuffer; ++i) {
-                            newItems.push(getInViewObj({}, 0));
+                            newItems.push(createInViewObj({}, 0));
                         }
 
                         itemsInView.splice.apply(itemsInView, newItems);
@@ -939,7 +988,7 @@ TWEEN.Interpolation = {
 
             items.push.apply(items, args);
             while(itemsInView.length < maxBuffer && i < args.length) {
-                itemsInView.push( getInViewObj(args[i], argsIdx) );
+                itemsInView.push( createInViewObj(args[i], argsIdx) );
 
                 i = i + 1;
                 argsIdx = argsIdx + 1;
