@@ -33,7 +33,7 @@
     (function() {
         var scrollView      = document.querySelector(".scrollView");
         var itemsContainer  = document.querySelector(".items");
-        var template        = document.querySelector(".items .item").cloneNode(true);
+        var template        = document.querySelector(".items .item");
         var control         = document.querySelector(".control");
         var viewTypeEls     = document.querySelectorAll(".control input[type='radio']");
         var rvScroller;
@@ -120,6 +120,7 @@
             })();
         }
 
+        itemsContainer.removeChild(template);
         setupScroller("grid");
         // For Demo
 //        setInterval(function() {
