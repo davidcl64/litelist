@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title></title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="assets/main.css">
+</head>
+<body>
+<div class="control row">
+    <input type="radio" name="listStyle" value="grid" rv-checked="view.type">Grid</input>
+    <input type="radio" name="listStyle" value="list" rv-checked="view.type">List</input>
+</div>
+<div class="scrollView row col scroll-y">
+    <div class="items row">
+        <div class="item">
+            <img>
+            <div class="description"></div>
+            <div class="price"></div>
+        </div>
+    </div>
+</div>
+
+<script src="litelist.bundled.js"></script>
+
+<script>
+    (function() {
+        var scrollView = document.querySelector(".scrollView");
+        var template   = document.querySelector(".items .item").cloneNode(true);
+        var control    = document.querySelector(".control");
+        var view       = {type: "grid"};
+        var rvScroller;
+
+        var boundNodes = {};
+        var dataSource = {
+            bind: function(id, el) {
+                boundNodes[id] = {
+                    el:          el,
+                    img:         el.querySelector('img'),
+                    description: el.querySelector('.description'),
+                    price:       el.querySelector('.price')
+                }
+            },
+
+            synch: function(id, el, itemIdx, item) {
+                var bound = boundNodes[id];
+                bound.img.src               = item.imgSrc;
+                bound.description.innerText = item.name;
+                bound.price.innerText       = item.price;
+            },
+
+            unbind: function(id, el) {
+                if(boundNodes.hasOwnProperty(id)) {
+                    delete(boundNodes[id]);
+                }
+            }
+        };
+
+        var scrollerOpts = {
+            grid: {
+                itemWidth:      200,
+                itemHeight:     300,
+                margin:         { x: 10, y: 10 },
+                maxBuffer:      50,
+                scrollView:     ".scrollView",
+                itemsContainer: ".items",
+                itemTemplate:   template,
+                dataSource:     dataSource
+            },
+
+            list: {
+                itemHeight:     40,
+                margin:         { x: 0, y: 0 },
+                maxBuffer:      50,
+                scrollView:     ".scrollView",
+                itemsContainer: ".items",
+                itemTemplate:   template,
+                dataSource:     dataSource
+            }
+        }
+
+        function setupScroller(type) {
+            scrollView.classList.remove("grid", "list");
+            scrollView.classList.add(type);
+
+            rvScroller = new LiteList(scrollerOpts[type]);
+
+            var i;
+            // Setup for demo
+            (function() {
+                var imgUrl = type === "grid" ? "http://placekitten.com/180/180?image="
+                        : "http://placekitten.com/35/35?image="
+                for(i = 0; i < 1000; ++i) {
+
+                    rvScroller.push({
+                        imgSrc:  imgUrl + (i%16),
+                        name: "Item " + i,
+                        price: "0.00"
+                    });
+                }
+            })();
+        }
+
+        setupScroller("grid");
+        // For Demo
+//        setInterval(function() {
+//            rvScroller.push({
+//                imgSrc: "http://placekitten.com/180/180?image=" + (i%16),
+//                inCartQty: 1,
+//                name: "Item " + i++,
+//                price: "0.00"
+//            });
+//        }, 2000);
+    })();
+</script>
+</body>
+</html>
