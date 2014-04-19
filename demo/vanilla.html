@@ -41,19 +41,27 @@
         var boundNodes = {};
         var dataSource = {
             bind: function(id, el) {
+                var desc      = el.querySelector('.description');
+                var price     = el.querySelector('.price');
+                var descText  = document.createTextNode("");
+                var priceText = document.createTextNode("");
+
+                desc.appendChild(descText);
+                price.appendChild(priceText);
+
                 boundNodes[id] = {
                     el:          el,
                     img:         el.querySelector('img'),
-                    description: el.querySelector('.description'),
-                    price:       el.querySelector('.price')
+                    description: descText,
+                    price:       priceText
                 }
             },
 
             sync: function(id, el, itemIdx, item) {
                 var bound = boundNodes[id];
-                bound.img.src               = item.imgSrc;
-                bound.description.innerText = item.name;
-                bound.price.innerText       = item.price;
+                bound.img.src          = item.imgSrc;
+                bound.description.data = item.name;
+                bound.price.data       = item.price;
             },
 
             unbind: function(id, el) {
