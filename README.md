@@ -92,6 +92,7 @@ needs to occur (both performance and functional).  It is very likely that as imp
  internal implementation will change significantly.
 
 - Provide a simple, performant mechanism for lazy loading of the list.
+- Expose generated scroll events from scroller (for mobile use case)
 - Expose better ways to populate and maintain the list of items
 - Support a visible scrollbar for mobile browsers
 - more...
