@@ -19,7 +19,6 @@
   "devDependencies": {
     "grunt-contrib-concat": "~0.3.0",
     "grunt-contrib-jshint": "~0.6.4",
-    "grunt-contrib-uglify": "~0.2.4",
     "grunt": "~0.4.1",
     "grunt-contrib-watch": "~0.5.3",
     "grunt-contrib-qunit": "~0.3.0",
@@ -27,6 +26,7 @@
     "grunt-contrib-copy": "~0.5.0",
     "load-grunt-tasks": "~0.4.0",
     "browserify": "~3.44.2",
-    "grunt-browserify": "~2.0.8"
+    "grunt-browserify": "~2.0.8",
+    "grunt-contrib-uglify": "~0.4.0"
   }
 }

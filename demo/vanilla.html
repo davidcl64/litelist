@@ -27,7 +27,20 @@
     </div>
 </div>
 
+<!--
+  You could just included the bundled version but if you want to
+  piece it together/optionally load scrolling functionality on specific clients,
+  it would look something like this...
+-->
+<!--
 <script src="litelist.bundled.js"></script>
+-->
+<script src="scroll.js"></script>
+<script src="litelist.js"></script>
+<script>
+    // tell LiteList about/enable Scroll
+    window.LiteList.Scroll = window.LiteListScroll;
+</script>
 
 <script>
     (function() {

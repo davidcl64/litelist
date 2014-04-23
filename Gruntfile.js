@@ -4,48 +4,51 @@ module.exports = function(grunt) {
     require('load-grunt-tasks')(grunt);
 
     var reloadPort = 35729;
+    var pkg = grunt.file.readJSON('package.json');
+
+    var distOpts = {
+        bundled: pkg.name.replace(".js", "") + '.bundled.js',
+        core:    pkg.name.replace(".js", "") + '.js',
+        rivets:  'rv' + pkg.name.replace(".js", "") + '.js',
+        scroll:  'scroll.js'
+    };
 
     grunt.initConfig({
 
-        pkg: grunt.file.readJSON('package.json'),
+        pkg: pkg,
 
-        concat: {
-            options: {
-                separator: "\n\n"
+        distOpts: distOpts,
+
+        browserify: {
+            bundled: {
+                options: { bundleOptions: { standalone: 'LiteList' } },
+                files:   { 'dist/<%= distOpts.bundled %>': ['src/bundled.js'] }
             },
-            dist: {
-                src: [
-                    'src/litelist.js'
-                ],
-                dest: 'dist/<%= pkg.name.replace(".js", "") %>.js'
+            liteList: {
+                options: { bundleOptions: { standalone: 'LiteList' } },
+                files:   { 'dist/<%= distOpts.core %>': ['src/litelist.js'] }
             },
-            distRV: {
-                src: [
-                    'src/rvlitelist.js'
-                ],
-                dest: 'dist/rv<%= pkg.name.replace(".js", "") %>.js'
+            rvLiteList: {
+                options: { bundleOptions: { standalone: 'LiteList' } },
+                files:   { 'dist/<%= distOpts.rivets %>': ['src/rvlitelist.js'] }
             },
-            distBundled: {
-                src: [
-                    'bower_components/raf.js/raf.js',
-                    'bower_components/tweenjs/src/Tween.js',
-                    'src/litelist.js',
-                    'src/rvlitelist.js',
-                    'src/scroll.js'
-                ],
-                dest: 'dist/<%= pkg.name.replace(".js", "") %>.bundled.js'
+            scroll: {
+                options: { bundleOptions: { standalone: 'LiteListScroll' } },
+                files:   { 'dist/<%= distOpts.scroll %>': ['src/scroll.js'] }
             }
         },
 
         uglify: {
             options: {
-                banner: '/*! <%= pkg.name.replace(".js", "") %> <%= grunt.template.today("dd-mm-yyyy") %> */\n'
+                banner: '/*! <%= pkg.name.replace(".js", "") %> <%= grunt.template.today("dd-mm-yyyy") %> */\n',
+                sourceMap: true
             },
             dist: {
                 files: {
-                    'dist/<%= pkg.name.replace(".js", "") %>.min.js': ['<%= concat.dist.dest %>'],
-                    'dist/rv<%= pkg.name.replace(".js", "") %>.min.js': ['<%= concat.distRV.dest %>'],
-                    'dist/<%= pkg.name.replace(".js", "") %>.bundled.min.js': ['<%= concat.distBundled.dest %>']
+                    'dist/<%= distOpts.bundled.replace(".js", "") %>.min.js': ['dist/<%= distOpts.bundled %>'],
+                    'dist/<%= distOpts.core   .replace(".js", "") %>.min.js': ['dist/<%= distOpts.core    %>'],
+                    'dist/<%= distOpts.rivets .replace(".js", "") %>.min.js': ['dist/<%= distOpts.rivets  %>'],
+                    'dist/<%= distOpts.scroll .replace(".js", "") %>.min.js': ['dist/<%= distOpts.scroll  %>']
                 }
             }
         },
@@ -55,7 +58,7 @@ module.exports = function(grunt) {
         },
 
         jshint: {
-            files: ['dist/litelist.js'],
+            files: ['src/**/*.js'],
             options: {
                 jshintrc: '.jshintrc'
             }
@@ -81,7 +84,7 @@ module.exports = function(grunt) {
                 options: {
                     livereload: reloadPort
                 },
-                tasks: ['concat', 'jshint', 'qunit', 'uglify']
+                tasks: ['jshint', 'browserify', 'qunit', 'uglify']
             },
             css: {
                 files: ['demo/assets/*.css'],
@@ -96,15 +99,9 @@ module.exports = function(grunt) {
                 }
             }
         }
-        /*
-        watch: {
-            files: ['src/litelist.js'],
-            tasks: ['concat', 'jshint', 'qunit', 'uglify', 'connect']
-        }
-        */
     });
 
     grunt.registerTask('test', ['jshint', 'qunit']);
-    grunt.registerTask('build', ['concat', 'jshint', 'qunit', 'uglify']);
+    grunt.registerTask('build', ['jshint', 'browserify', 'qunit', 'uglify']);
     grunt.registerTask('default', ['connect', 'watch']);
 };

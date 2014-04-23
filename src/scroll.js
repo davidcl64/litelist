@@ -138,4 +138,4 @@ function Scroll(viewSelector, listener) {
 }
 
 
-LiteList.Scroll = Scroll;
+module.exports = Scroll;

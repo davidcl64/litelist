@@ -1,8 +1,7 @@
-var rivets = require('rivets');
+var rivets   = require('rivets');
 var LiteList = require('./litelist');
 
-
-var RVLiteList = function(opts) {
+function RVLiteList(opts) {
     this.liteList    = new LiteList(opts);
     this.itemsInView = this.liteList.itemsInView;
 
@@ -23,8 +22,9 @@ var RVLiteList = function(opts) {
             height: function(el, val) { el.style.height = val + "px"; }
         }
     });
-
-};
+}
 
 LiteList.RivetsLiteList = RVLiteList;
+
+module.exports = LiteList;
 
