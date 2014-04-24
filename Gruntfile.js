@@ -19,28 +19,20 @@ module.exports = function(grunt) {
 
         browserify: {
             bundled: {
-                options: {
-                    // alias will both alias and expose require
-                    alias: ['./src/litelist:LiteList', "rivets:rivets"]
-                },
+                // alias will both alias and expose require
+                options: { alias: ['./src/litelist:LiteList', "rivets:rivets"] },
                 files:   { 'dist/<%= distOpts.bundled %>': ['./src/bundled.js'] }
             },
             liteList: {
-                options: {
-                    alias: ['./src/litelist:LiteList']
-                },
+                options: { alias: ['./src/litelist:LiteList'] },
                 files:   { 'dist/<%= distOpts.core %>': ['./src/litelist.js'] }
             },
             rvLiteList: {
-                options: {
-                    alias: ['./src/litelist.js:LiteList', "rivets:rivets"]
-                },
+                options: { alias: ['./src/litelist.js:LiteList', "rivets:rivets"] },
                 files:   { 'dist/<%= distOpts.rivets %>': ['./src/rvlitelist.js'] }
             },
             scroll: {
-                options: {
-                    alias: ['./src/scroll.js:LiteListScroll']
-                },
+                options: { alias: ['./src/scroll.js:LiteListScroll'] },
                 files:   { 'dist/<%= distOpts.scroll %>': ['./src/scroll.js'] }
             }
         },
