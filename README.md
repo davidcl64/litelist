@@ -9,7 +9,7 @@ potentially thousands of entries.
 
 ## Installation
 
-It's not up on Bower or NPM yet, so grab the [source](https://github.com/davidcl64/litelist/dist/)
+It's not up on NPM or Bower (tbd) yet, so grab the [source](https://github.com/davidcl64/litelist/dist/)
 
 Couple of notes on that topic:
 
@@ -84,6 +84,21 @@ to bubble up to the items container and handle them there...
 
 **unbind:** Optional but recommended/required if storing references in `bind`. Called once when a view node is removed
 from the DOM.
+
+## Development
+
+[Grunt](http://gruntjs.com) with [browserify](http://browserify.org) via [grunt-browserify](https://github.com/jmreidy/grunt-browserify)
+is the build system for LiteList.  Once you have cloned the repo and have [nodejs](http://nodejs.org) and
+[Grunt](http://gruntjs.com/getting-started) installed run:
+
+    npm install .
+
+from the projects root folder.  Once that is done, you will be able to run various tasks using grunt:
+
+- ```grunt```: runs a dev server on port 9001, then watches for changes.
+- ```grunt build```: rebuilds contents of the dist folder
+
+For more detail on which tasks are run and the targets available, take a look at [Gruntfile.js](https://github.com/davidcl64/litelist/blob/master/Gruntfile.js)
 
 ## To Dos
 
