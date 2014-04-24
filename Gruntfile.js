@@ -32,7 +32,7 @@ module.exports = function(grunt) {
                 files:   { 'dist/<%= distOpts.rivets %>': ['./src/rvlitelist.js'] }
             },
             scroll: {
-                options: { alias: ['./src/scroll.js:LiteListScroll'] },
+                options: { alias: ['./src/scroll.js:LiteListScroll', 'tween.js:tween.js', 'tween.js:TWEEN'] },
                 files:   { 'dist/<%= distOpts.scroll %>': ['./src/scroll.js'] }
             }
         },

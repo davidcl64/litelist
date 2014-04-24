@@ -40,7 +40,7 @@ require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof requ
 	window.requestAnimationFrame = requestAnimationFrame;
 	window.cancelAnimationFrame = cancelAnimationFrame;
 }(window));
-},{}],2:[function(require,module,exports){
+},{}],"yazFk1":[function(require,module,exports){
 // tween.js - http://github.com/sole/tween.js
 /**
  * @author sole / http://soledadpenades.com
@@ -785,6 +785,8 @@ TWEEN.Interpolation = {
 };
 
 module.exports=TWEEN;
+},{}],"TWEEN":[function(require,module,exports){
+module.exports=require('yazFk1');
 },{}],"YglI/K":[function(require,module,exports){
 var TWEEN = require("tween.js");
 
@@ -928,6 +930,6 @@ function Scroll(viewSelector, listener) {
 
 module.exports = Scroll;
 
-},{"raf.js":1,"tween.js":2}],"LiteListScroll":[function(require,module,exports){
+},{"raf.js":1,"tween.js":"yazFk1"}],"LiteListScroll":[function(require,module,exports){
 module.exports=require('YglI/K');
 },{}]},{},["YglI/K"])
