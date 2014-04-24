@@ -24,7 +24,5 @@ function RVLiteList(opts) {
     });
 }
 
-LiteList.RivetsLiteList = RVLiteList;
-
-module.exports = LiteList;
+module.exports = RVLiteList;
 

@@ -27,11 +27,14 @@
     </div>
 </div>
 
-<script src="rivets/dist/rivets.js"></script>
+<!-- rivets.js is bundled in -->
 <script src="litelist.bundled.js"></script>
 
 <script>
     (function() {
+        var rivets     = require("rivets");
+        var LiteList   = require("LiteList");
+
         var scrollView = document.querySelector(".scrollView");
         var template   = document.querySelector(".items").cloneNode(true);
         var control    = document.querySelector(".control");

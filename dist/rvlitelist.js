@@ -1,4 +1,4 @@
-!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.LiteList=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
+require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"4ZwREV":[function(require,module,exports){
 // Rivets.js
 // version: 0.6.7
 // author: Michael Richards
@@ -1293,7 +1293,9 @@
 
 }).call(this);
 
-},{}],2:[function(_dereq_,module,exports){
+},{}],"rivets":[function(require,module,exports){
+module.exports=require('4ZwREV');
+},{}],"8W3yvp":[function(require,module,exports){
 "use strict";
 
 // Base function.
@@ -1549,9 +1551,11 @@ LiteList.VERSION = '0.0.0';
 
 
 module.exports = LiteList;
-},{}],3:[function(_dereq_,module,exports){
-var rivets   = _dereq_('rivets');
-var LiteList = _dereq_('./litelist');
+},{}],"LiteList":[function(require,module,exports){
+module.exports=require('8W3yvp');
+},{}],5:[function(require,module,exports){
+var rivets   = require('rivets');
+var LiteList = require('./litelist');
 
 function RVLiteList(opts) {
     this.liteList    = new LiteList(opts);
@@ -1576,11 +1580,7 @@ function RVLiteList(opts) {
     });
 }
 
-LiteList.RivetsLiteList = RVLiteList;
-
-module.exports = LiteList;
+module.exports = RVLiteList;
 
 
-},{"./litelist":2,"rivets":1}]},{},[3])
-(3)
-});
+},{"./litelist":"8W3yvp","rivets":"4ZwREV"}]},{},[5])

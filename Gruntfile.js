@@ -14,27 +14,34 @@ module.exports = function(grunt) {
     };
 
     grunt.initConfig({
-
-        pkg: pkg,
-
+        pkg:      pkg,
         distOpts: distOpts,
 
         browserify: {
             bundled: {
-                options: { bundleOptions: { standalone: 'LiteList' } },
-                files:   { 'dist/<%= distOpts.bundled %>': ['src/bundled.js'] }
+                options: {
+                    // alias will both alias and expose require
+                    alias: ['./src/litelist:LiteList', "rivets:rivets"]
+                },
+                files:   { 'dist/<%= distOpts.bundled %>': ['./src/bundled.js'] }
             },
             liteList: {
-                options: { bundleOptions: { standalone: 'LiteList' } },
-                files:   { 'dist/<%= distOpts.core %>': ['src/litelist.js'] }
+                options: {
+                    alias: ['./src/litelist:LiteList']
+                },
+                files:   { 'dist/<%= distOpts.core %>': ['./src/litelist.js'] }
             },
             rvLiteList: {
-                options: { bundleOptions: { standalone: 'LiteList' } },
-                files:   { 'dist/<%= distOpts.rivets %>': ['src/rvlitelist.js'] }
+                options: {
+                    alias: ['./src/litelist.js:LiteList', "rivets:rivets"]
+                },
+                files:   { 'dist/<%= distOpts.rivets %>': ['./src/rvlitelist.js'] }
             },
             scroll: {
-                options: { bundleOptions: { standalone: 'LiteListScroll' } },
-                files:   { 'dist/<%= distOpts.scroll %>': ['src/scroll.js'] }
+                options: {
+                    alias: ['./src/scroll.js:LiteListScroll']
+                },
+                files:   { 'dist/<%= distOpts.scroll %>': ['./src/scroll.js'] }
             }
         },
 

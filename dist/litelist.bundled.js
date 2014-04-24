@@ -1,4 +1,4 @@
-!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.LiteList=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
+require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /*
  * raf.js
  * https://github.com/ngryman/raf.js
@@ -40,7 +40,7 @@
 	window.requestAnimationFrame = requestAnimationFrame;
 	window.cancelAnimationFrame = cancelAnimationFrame;
 }(window));
-},{}],2:[function(_dereq_,module,exports){
+},{}],"4ZwREV":[function(require,module,exports){
 // Rivets.js
 // version: 0.6.7
 // author: Michael Richards
@@ -1335,7 +1335,9 @@
 
 }).call(this);
 
-},{}],3:[function(_dereq_,module,exports){
+},{}],"rivets":[function(require,module,exports){
+module.exports=require('4ZwREV');
+},{}],4:[function(require,module,exports){
 // tween.js - http://github.com/sole/tween.js
 /**
  * @author sole / http://soledadpenades.com
@@ -2080,14 +2082,14 @@ TWEEN.Interpolation = {
 };
 
 module.exports=TWEEN;
-},{}],4:[function(_dereq_,module,exports){
-var LiteList            = _dereq_("./litelist");
-LiteList.RivetsLiteList = _dereq_("./rvlitelist");
-LiteList.Scroll         = _dereq_("./scroll");
+},{}],5:[function(require,module,exports){
+var LiteList            = require("./litelist");
+LiteList.RivetsLiteList = require("./rvlitelist");
+LiteList.Scroll         = require("./scroll");
 
 
 module.exports = LiteList;
-},{"./litelist":5,"./rvlitelist":6,"./scroll":7}],5:[function(_dereq_,module,exports){
+},{"./litelist":"8W3yvp","./rvlitelist":8,"./scroll":9}],"8W3yvp":[function(require,module,exports){
 "use strict";
 
 // Base function.
@@ -2343,9 +2345,11 @@ LiteList.VERSION = '0.0.0';
 
 
 module.exports = LiteList;
-},{}],6:[function(_dereq_,module,exports){
-var rivets   = _dereq_('rivets');
-var LiteList = _dereq_('./litelist');
+},{}],"LiteList":[function(require,module,exports){
+module.exports=require('8W3yvp');
+},{}],8:[function(require,module,exports){
+var rivets   = require('rivets');
+var LiteList = require('./litelist');
 
 function RVLiteList(opts) {
     this.liteList    = new LiteList(opts);
@@ -2370,15 +2374,13 @@ function RVLiteList(opts) {
     });
 }
 
-LiteList.RivetsLiteList = RVLiteList;
-
-module.exports = LiteList;
+module.exports = RVLiteList;
 
 
-},{"./litelist":5,"rivets":2}],7:[function(_dereq_,module,exports){
-var TWEEN = _dereq_("tween.js");
+},{"./litelist":"8W3yvp","rivets":"4ZwREV"}],9:[function(require,module,exports){
+var TWEEN = require("tween.js");
 
-_dereq_("raf.js");
+require("raf.js");
 
 function Scroll(viewSelector, listener) {
     var view,
@@ -2518,6 +2520,4 @@ function Scroll(viewSelector, listener) {
 
 module.exports = Scroll;
 
-},{"raf.js":1,"tween.js":3}]},{},[4])
-(4)
-});
+},{"raf.js":1,"tween.js":4}]},{},[5])
