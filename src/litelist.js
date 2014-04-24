@@ -249,7 +249,7 @@ function LiteList(opts) {
 
 
 // Version.
-LiteList.VERSION = '0.0.0';
+LiteList.VERSION = '0.1.1';
 
 
 module.exports = LiteList;
