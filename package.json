@@ -7,7 +7,7 @@
     "type": "git",
     "url": "git://github.com/davidcl64/litelist.git"
   },
-  "keywords": [],
+  "keywords": ["virtual", "list", "scroll", "dom", "overhead"],
   "author": "David Clarke",
   "license": "MIT",
   "readmeFilename": "README.md",
