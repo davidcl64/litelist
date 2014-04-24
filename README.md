@@ -9,7 +9,7 @@ potentially thousands of entries.
 
 ## Installation
 
-It's not up on NPM or Bower (tbd) yet, so grab the [source](https://github.com/davidcl64/litelist/dist/)
+```npm install litelist``` or grab the [source](https://github.com/davidcl64/litelist/dist/).  Bower is still tbd.
 
 Couple of notes on that topic:
 
