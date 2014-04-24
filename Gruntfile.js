@@ -35,6 +35,10 @@ module.exports = function(grunt) {
             scroll: {
                 options: { alias: ['./src/scroll.js:LiteListScroll', 'tween.js:tween.js', 'tween.js:TWEEN'] },
                 files:   { 'dist/<%= distOpts.scroll %>': ['./src/scroll.js'] }
+            },
+            tests: {
+                options: { alias: ['./src/litelist:LiteList'] },
+                files:   { 'test/suite.bundle.js': ['./test/tests.js'] }
             }
         },
 
@@ -54,8 +58,14 @@ module.exports = function(grunt) {
             }
         },
 
-        qunit: {
-            files: ['test/*.html']
+        mocha: {
+            test: {
+                src: ['test/index.html'],
+                options: {
+                    run: true,
+                    reporter: 'Spec'
+                }
+            }
         },
 
         jshint: {
@@ -70,7 +80,7 @@ module.exports = function(grunt) {
                 options: {
                     livereload: reloadPort,
                     port: 9001,
-                    base: ['demo', 'dist', 'bower_components']
+                    base: ['.', 'demo', 'dist', 'bower_components']
                 }
             }
         },
@@ -81,7 +91,7 @@ module.exports = function(grunt) {
                 livereload: reloadPort
             },
             js: {
-                files: ['src/*.js'],
+                files: ['src/*.js', 'test/tests.js'],
                 options: {
                     livereload: reloadPort
                 },
@@ -102,13 +112,13 @@ module.exports = function(grunt) {
         }
     });
 
-    grunt.registerTask('test', ['jshint', 'qunit']);
+    grunt.registerTask('test', ['jshint', 'mocha']);
     grunt.registerTask('default', ['connect', 'watch']);
 
     // Allow caller to specify reporting.  Watch calls with 'min' for
     // faster build times.
     grunt.registerTask('build', 'Run all build tasks', function(_report) {
         grunt.config.set('uglifyOpts.report', _report || 'gzip');
-        grunt.task.run('jshint', 'browserify', 'qunit', 'uglify');
+        grunt.task.run('jshint', 'browserify', 'mocha', 'uglify');
     });
 };

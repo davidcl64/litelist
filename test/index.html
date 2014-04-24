@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Mocha</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="lib/mocha.css" />
+  </head>
+  <body>
+    <div id="mocha"></div>
+    <script src="lib/mocha.js"></script>
+
+    <!-- Chai, the assertion module used for testing. -->
+    <script src="../node_modules/chai/chai.js" type="text/javascript" charset="utf-8"></script>
+
+    <!-- Sinon, another helper library for creating mocks, stubs, and spies. -->
+    <script src="../node_modules/sinon/pkg/sinon.js" type="text/javascript" charset="utf-8"></script>
+
+    <!-- A plugin for chai that allows for easier use of chai with sinon -->
+    <script src="../node_modules/sinon-chai/lib/sinon-chai.js" type="text/javascript" charset="utf-8"></script>
+
+    <!-- Testing setup code -->
+    <script>
+
+        (function(){
+
+            // Options for running mocha
+            var options = { ui: 'bdd' };
+
+            // Call setup code for mocha
+            mocha.setup(options);
+
+            // Define expect as chai's expect function.
+            expect = chai.expect;
+        }());
+
+    </script>
+
+    <!-- Actual test code to be run -->
+    <script src="suite.bundle.js"></script>
+
+    <script>
+        if (navigator.userAgent.indexOf('PhantomJS') < 0) {
+            mocha.run();
+        }
+    </script>  </body>
+</html>
