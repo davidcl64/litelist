@@ -38,14 +38,17 @@
 <script src="scroll.js"></script>
 <script src="litelist.js"></script>
 <script>
-    var LiteList = require('LiteList');
+    !(function() {
+        var LiteList = require('LiteList');
 
-    // tell LiteList about/enable Scroll
-    LiteList.Scroll = require('LiteListScroll');
+        // tell LiteList about/enable Scroll
+        LiteList.Scroll = require('LiteListScroll');
+    })();
 </script>
 
 <script>
-    (function() {
+    !(function() {
+        var LiteList        = require('LiteList');
         var scrollView      = document.querySelector(".scrollView");
         var itemsContainer  = document.querySelector(".items");
         var template        = document.querySelector(".items .item");
