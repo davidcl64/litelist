@@ -3,9 +3,9 @@ module.exports = function(grunt) {
     // load all grunt tasks
     require('load-grunt-tasks')(grunt);
 
-    var reloadPort = 35729;
-    var pkg = grunt.file.readJSON('package.json');
-
+    var reloadPort   = 35729;
+    var pkg          = grunt.file.readJSON('package.json');
+    
     var distOpts = {
         bundled: pkg.name.replace(".js", "") + '.bundled.js',
         core:    pkg.name.replace(".js", "") + '.js',
@@ -16,6 +16,7 @@ module.exports = function(grunt) {
     grunt.initConfig({
         pkg:      pkg,
         distOpts: distOpts,
+        uglifyOpts: { report: 'min' },
 
         browserify: {
             bundled: {
@@ -40,7 +41,8 @@ module.exports = function(grunt) {
         uglify: {
             options: {
                 banner: '/*! <%= pkg.name.replace(".js", "") %> <%= grunt.template.today("dd-mm-yyyy") %> */\n',
-                sourceMap: true
+                sourceMap: true,
+                report: '<%= uglifyOpts.report %>'
             },
             dist: {
                 files: {
@@ -83,7 +85,7 @@ module.exports = function(grunt) {
                 options: {
                     livereload: reloadPort
                 },
-                tasks: ['jshint', 'browserify', 'qunit', 'uglify']
+                tasks: ['build:min']
             },
             css: {
                 files: ['demo/assets/*.css'],
@@ -101,6 +103,12 @@ module.exports = function(grunt) {
     });
 
     grunt.registerTask('test', ['jshint', 'qunit']);
-    grunt.registerTask('build', ['jshint', 'browserify', 'qunit', 'uglify']);
     grunt.registerTask('default', ['connect', 'watch']);
+
+    // Allow caller to specify reporting.  Watch calls with 'min' for
+    // faster build times.
+    grunt.registerTask('build', 'Run all build tasks', function(_report) {
+        grunt.config.set('uglifyOpts.report', _report || 'gzip');
+        grunt.task.run('jshint', 'browserify', 'qunit', 'uglify');
+    });
 };
