@@ -37,7 +37,15 @@ module.exports = function(grunt) {
                 files:   { 'dist/<%= distOpts.scroll %>': ['./src/scroll.js'] }
             },
             tests: {
-                options: { alias: ['./src/litelist:LiteList'] },
+                options: {
+                    alias: [
+                        './src/litelist:LiteList',
+                        './src/scroll:LiteListScroll',
+                        'rivets:rivets',
+                        'tween.js:tween.js',
+                        'tween.js:TWEEN'
+                    ]
+                },
                 files:   { 'test/suite.bundle.js': ['./test/tests.js'] }
             }
         },
