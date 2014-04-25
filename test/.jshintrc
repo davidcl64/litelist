@@ -1,0 +1,30 @@
+{
+    "curly": true,
+    "eqeqeq": true,
+    "immed": true,
+    "latedef": true,
+    "newcap": true,
+    "noarg": true,
+    "sub": true,
+    "undef": true,
+    "unused": true,
+    "boss": true,
+    "eqnull": true,
+    "node": true,
+    "laxcomma": true,
+    "expr": true,
+    "globals"   : {
+        "define": true,
+        "require": true,
+        "window": true,
+        "document": true,
+        "NodeList": true,
+        "exports": true,
+        "console": true,
+        "describe": true,
+        "emit": true,
+        "beforeEach": true,
+        "expect": true,
+        "it": true
+    }
+}
