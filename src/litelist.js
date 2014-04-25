@@ -23,36 +23,41 @@ function LiteList(opts) {
     this.itemsPerPage    = 0;
     this.maxBuffer       = 0;
 
+    // Keep track of a unique id for viewItems - allows This is passed to
+    // datasource providers to aid in tracking.
+    this._id = 0;
+
+    // Keeps track of the old first visible portion of the list
+    this._oldStart = 0;
+
     // If not passed a page selector, assume it's the first child
     if(!this.itemsContainer) {
         this.itemsContainer = this.view.children[0];
     }
 
-    // ensureVisible is used in requestAnimationFrame - bind it to this
-    this.ensureVisible = this.ensureVisible.bind(this);
+    // _ensureVisible is used in requestAnimationFrame - bind it to this
+    this._ensureVisible = this._ensureVisible.bind(this);
 
-    // Invoked as a result of event listeners
-    this.scrollHandler = this.scrollHandler.bind(this);
-    this.resizeHandler = this.resizeHandler.bind(this);
+    // Invoked as a result of event listeners - bind them to this
+    this._scrollHandler = this._scrollHandler.bind(this);
+    this._resizeHandler = this._resizeHandler.bind(this);
 
-    // Keep track of a unique id for viewItems - allows This is passed to
-    // datasource providers to aid in tracking.
-    this._id = 0;
-    this.calcViewMetrics();
+    // Ensure valid view metrics
+    this._calcViewMetrics();
 
-    this._oldStart = 0;
-
+    // bind any event handlers now
     this.bind();
 
-    this.scroll = LiteList.Scroll ? new LiteList.Scroll(opts.scrollView, this.scrollHandler) : false;
+    // If we know about Scroll, attach it now
+    this.scroll = LiteList.Scroll ? new LiteList.Scroll(opts.scrollView, this._scrollHandler) : false;
 
     // Kicks off a layout (dirtyResize defaults to true)
     // This will layout everything nicely filling all columns
-    this.calcDocHeight();
-    this.requestTick();
+    this._calcDocHeight();
+    this._requestTick();
 }
 
-LiteList.prototype.createInViewObj = function createInViewObj(item, idx) {
+LiteList.prototype._createInViewObj = function createInViewObj(item, idx) {
     var row = Math.floor(idx/this.itemsPerRow);
     var col = (idx % this.itemsPerRow);
 
@@ -75,13 +80,13 @@ LiteList.prototype.createInViewObj = function createInViewObj(item, idx) {
             this.dataSource.bind(newViewObj.id, newNode);
         }
 
-        this.positionViewItem(newViewObj, true);
+        this._positionViewItem(newViewObj, true);
     }
 
     return newViewObj;
 };
 
-LiteList.prototype.calcViewMetrics = function calcViewMetrics() {
+LiteList.prototype._calcViewMetrics = function calcViewMetrics() {
     this.clientHeight    = this.view.clientHeight;
     this.clientWidth     = this.view.clientWidth;
     this.rowsPerPage     = Math.ceil (this.clientHeight / (this.itemHeight + this.margin.y));
@@ -90,7 +95,7 @@ LiteList.prototype.calcViewMetrics = function calcViewMetrics() {
     this.maxBuffer       = this.itemsPerPage * 3;
 };
 
-LiteList.prototype.calcDocHeight = function calcDocHeight() {
+LiteList.prototype._calcDocHeight = function calcDocHeight() {
     var row = Math.ceil(this.items.length/this.itemsPerRow);
     var newHeight = row * this.itemHeight + row * this.margin.y;
 
@@ -101,7 +106,7 @@ LiteList.prototype.calcDocHeight = function calcDocHeight() {
     return this.itemsInView.height;
 };
 
-LiteList.prototype.positionViewItem = function positionViewItem(viewItem, force) {
+LiteList.prototype._positionViewItem = function positionViewItem(viewItem, force) {
     var idx  = viewItem.idx;
     var row  = Math.floor(idx/this.itemsPerRow);
     var col  = (idx % this.itemsPerRow);
@@ -136,7 +141,7 @@ LiteList.prototype.positionViewItem = function positionViewItem(viewItem, force)
     }
 };
 
-LiteList.prototype._ensureVisible = function _ensureVisible() {
+LiteList.prototype.__ensureVisible = function _ensureVisible() {
     var bufferHeight  = this.itemsInView.length * this.itemHeight/this.itemsPerRow + this.itemsInView.length * this.margin.y/this.itemsPerRow;
     var percentInView = ((this.scrollTop - bufferHeight/3) / (this.itemsInView.height - this.clientHeight));
 
@@ -150,7 +155,7 @@ LiteList.prototype._ensureVisible = function _ensureVisible() {
             viewItem = this.itemsInView[i % this.itemsInView.length];
 
             viewItem.idx = viewItem.idx - this.itemsInView.length;
-            this.positionViewItem(viewItem);
+            this._positionViewItem(viewItem);
         }
     } else if(newStart > this._oldStart) {
         for(i = this._oldStart; i < newStart ; ++i) {
@@ -158,7 +163,7 @@ LiteList.prototype._ensureVisible = function _ensureVisible() {
 
             viewItem.idx = viewItem.idx + this.itemsInView.length;
             if(viewItem.idx < this.items.length) {
-                this.positionViewItem(viewItem);
+                this._positionViewItem(viewItem);
             }
         }
     }
@@ -168,7 +173,7 @@ LiteList.prototype._ensureVisible = function _ensureVisible() {
     this.ticking     = false;
 };
 
-LiteList.prototype.ensureVisible = function ensureVisible() {
+LiteList.prototype._ensureVisible = function ensureVisible() {
     if(this.dirtyResize) {
         var newHeight    = this.view.clientHeight;
         var newWidth     = this.view.clientWidth;
@@ -178,8 +183,8 @@ LiteList.prototype.ensureVisible = function ensureVisible() {
 
         var i, removed;
         if(newRowsPerPage !== this.rowsPerPage || newItemsPerRow !== this.itemsPerRow) {
-            this.calcViewMetrics();
-            this.calcDocHeight();
+            this._calcViewMetrics();
+            this._calcDocHeight();
 
             if(this.itemsInView.length > this.maxBuffer) {
                 removed = this.itemsInView.splice(0, this.itemsInView.length - this.maxBuffer);
@@ -193,7 +198,7 @@ LiteList.prototype.ensureVisible = function ensureVisible() {
             } else if(this.itemsInView.length < this.maxBuffer) {
                 var newItems = [-1, 0];
                 for(i = this.itemsInView.length; i < this.maxBuffer; ++i) {
-                    newItems.push(this.createInViewObj({}, 0));
+                    newItems.push(this._createInViewObj({}, 0));
                 }
 
                 this.itemsInView.splice.apply(this.itemsInView, newItems);
@@ -201,19 +206,19 @@ LiteList.prototype.ensureVisible = function ensureVisible() {
 
             for(i = 0; i < this.itemsInView.length; ++i) {
                 this.itemsInView[i].idx = i;
-                this.positionViewItem(this.itemsInView[i]);
+                this._positionViewItem(this.itemsInView[i]);
             }
 
             this._oldStart = 0;
         }
     }
 
-    this._ensureVisible();
+    this.__ensureVisible();
 };
 
-LiteList.prototype.requestTick = function requestTick() {
+LiteList.prototype._requestTick = function requestTick() {
     if(!this.ticking) {
-        window.requestAnimationFrame(this.ensureVisible);
+        window.requestAnimationFrame(this._ensureVisible);
     }
     this.ticking = true;
 };
@@ -225,36 +230,36 @@ LiteList.prototype.push = function push() {
 
     this.items.push.apply(this.items, args);
     while(this.itemsInView.length < this.maxBuffer && i < args.length) {
-        this.itemsInView.push( this.createInViewObj(args[i], argsIdx) );
+        this.itemsInView.push( this._createInViewObj(args[i], argsIdx) );
 
         i = i + 1;
         argsIdx = argsIdx + 1;
     }
 
-    this.calcDocHeight();
-    this.requestTick();
+    this._calcDocHeight();
+    this._requestTick();
 };
 
 LiteList.prototype.bind = function bind() {
-    this.view.addEventListener("scroll", this.scrollHandler);
-    window.addEventListener("resize", this.resizeHandler);
+    this.view.addEventListener("scroll", this._scrollHandler);
+    window.addEventListener("resize", this._resizeHandler);
 };
 
 LiteList.prototype.unbind = function unbind() {
-    this.view.removeEventListener("scroll", this.scrollHandler);
-    window.removeEventListener("resize", this.resizeHandler);
+    this.view.removeEventListener("scroll", this._scrollHandler);
+    window.removeEventListener("resize", this._resizeHandler);
 
     if(this.scroll) { this.scroll.unbind(); }
 };
 
-LiteList.prototype.scrollHandler = function scrollHandler(/*evt*/) {
+LiteList.prototype._scrollHandler = function scrollHandler(/*evt*/) {
     this.scrollTop  = this.view.scrollTop;
-    this.requestTick();
+    this._requestTick();
 };
 
-LiteList.prototype.resizeHandler = function resizeHandler(/*evt*/) {
+LiteList.prototype._resizeHandler = function resizeHandler(/*evt*/) {
     this.dirtyResize = true;
-    this.requestTick();
+    this._requestTick();
 };
 
 // Version.
