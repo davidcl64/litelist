@@ -83,8 +83,6 @@ LiteList.prototype._createInViewObj = function createInViewObj(item, idx) {
         if(this.dataSource && this.dataSource.bind) {
             this.dataSource.bind(newViewObj.id, newNode);
         }
-
-        this._positionViewItem(newViewObj, true);
     }
 
     return newViewObj;
@@ -185,7 +183,7 @@ LiteList.prototype._ensureVisible = function ensureVisible() {
         var newRowsPerPage     = Math.ceil (newHeight / (this.itemHeight + this.margin.y));
         var newItemsPerRow     = this.itemWidth ? Math.floor(newWidth  / (this.itemWidth  + this.margin.x)) : 1;
 
-        var i, removed;
+        var i, removed, inViewObj;
         if(newRowsPerPage !== this.rowsPerPage || newItemsPerRow !== this.itemsPerRow) {
             this._calcViewMetrics();
             this._calcDocHeight();
@@ -202,7 +200,9 @@ LiteList.prototype._ensureVisible = function ensureVisible() {
             } else if(this.itemsInView.length < this.maxBuffer) {
                 var newItems = [-1, 0];
                 for(i = this.itemsInView.length; i < this.maxBuffer; ++i) {
-                    newItems.push(this._createInViewObj({}, 0));
+                    inViewObj = this._createInViewObj({}, 0);
+                    newItems.push(inViewObj);
+                    this._positionViewItem(inViewObj, true);
                 }
 
                 this.itemsInView.splice.apply(this.itemsInView, newItems);
@@ -231,10 +231,13 @@ LiteList.prototype.push = function push() {
     var args    = Array.prototype.slice.call(arguments);
     var i       = 0;
     var argsIdx = this.items.length;
+    var inViewObj;
 
     this.items.push.apply(this.items, args);
     while(this.itemsInView.length < this.maxBuffer && i < args.length) {
-        this.itemsInView.push( this._createInViewObj(args[i], argsIdx) );
+        inViewObj = this._createInViewObj(args[i], argsIdx);
+        this.itemsInView.push(inViewObj);
+        this._positionViewItem(inViewObj, true);
 
         i = i + 1;
         argsIdx = argsIdx + 1;
