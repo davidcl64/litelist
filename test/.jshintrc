@@ -24,6 +24,7 @@
         "describe": true,
         "emit": true,
         "beforeEach": true,
+        "afterEach": true,
         "expect": true,
         "it": true
     }
