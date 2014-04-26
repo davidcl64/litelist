@@ -193,7 +193,7 @@ LiteList.prototype._ensureVisible = function ensureVisible() {
                     removed.forEach(function(inViewItem) {
                         this.dataSource.unbind(inViewItem.id, inViewItem.el);
                         this.itemsContainer.removeChild(inViewItem.el);
-                    });
+                    }.bind(this));
                 }
             } else if(this.itemsInView.length < this.maxBuffer) {
                 var newItems = [-1, 0];
