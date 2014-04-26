@@ -74,6 +74,10 @@ LiteList.prototype._createInViewObj = function createInViewObj(item, idx) {
     if(this.itemTemplate) {
         var newNode = this.itemTemplate.cloneNode(true);
 
+        if(newNode instanceof(window.DocumentFragment)) {
+            newNode = newNode.childNodes[0];
+        }
+
         this.itemsContainer.appendChild(newNode);
         newViewObj.el = newNode;
         if(this.dataSource && this.dataSource.bind) {
