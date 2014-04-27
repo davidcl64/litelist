@@ -49,7 +49,9 @@ describe(["LiteList"], function() {
         scrollView      = mock.getFakeView(viewWidth, viewHeight);
         itemsContainer  = scrollView.children[0];
 
-        itemTemplate.appendChild(document.createElement("div"));
+        if(itemTemplate.childNodes.length === 0) {
+            itemTemplate.appendChild(document.createElement("div"));
+        }
 
         // Create a new sandbox
         sandbox = sinon.sandbox.create();
