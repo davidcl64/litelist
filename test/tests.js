@@ -148,4 +148,26 @@ describe(["LiteList"], function() {
             expect(liteList.maxBuffer   ).to.equal(liteList.itemsPerPage * 3);
         });
     });
+
+    describe("_createInViewObj()", function() {
+        it("should create an in view object and add it to the dom with all options specified", function() {
+            var liteList  = new LiteList(fullOpts);
+            var item      = {text: 'hello'};
+            var inViewObj;
+
+            liteList.items[0] = item;
+            inViewObj = liteList._createInViewObj({text: 'hello'}, 0);
+            expect(itemsContainer.children.length).to.equal(1);
+        });
+
+        it("should create an in view object and not add it to the dom with required options specified", function() {
+            var liteList  = new LiteList(requiredOpts);
+            var item      = {text: 'hello'};
+            var inViewObj;
+
+            liteList.items[0] = item;
+            inViewObj = liteList._createInViewObj({text: 'hello'}, 0);
+            expect(itemsContainer.children.length).to.equal(0);
+        });
+    });
 });
