@@ -15,13 +15,14 @@ var mocks = {
                     appendChild: function(child) {
                         child.__mockId = ++this.id;
                         this.children.push(child);
+                        return child;
                     },
 
                     removeChild: function(child) {
                         for(var i = 0; i < this.children.length; i++) {
                             if(this.children[i].__mockId === child.__mockId) {
                                 this.children.splice(i,1);
-                                return;
+                                return child;
                             }
                         }
                     }
