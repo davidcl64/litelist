@@ -117,8 +117,8 @@ describe(["LiteList"], function() {
             // View Metrics
             expect(liteList.clientHeight).to.equal(viewHeight);
             expect(liteList.clientWidth ).to.equal(viewWidth);
-            expect(liteList.rowsPerPage ).to.equal(viewHeight/fullOpts.itemHeight);
-            expect(liteList.itemsPerRow ).to.equal(viewWidth /fullOpts.itemWidth );
+            expect(liteList.rowsPerPage ).to.equal(Math.ceil (viewHeight/fullOpts.itemHeight));
+            expect(liteList.itemsPerRow ).to.equal(Math.floor(viewWidth /fullOpts.itemWidth ));
             expect(liteList.itemsPerPage).to.equal(liteList.rowsPerPage * liteList.itemsPerRow);
             expect(liteList.maxBuffer   ).to.equal(liteList.itemsPerPage * 3);
         });
@@ -142,7 +142,7 @@ describe(["LiteList"], function() {
             // View Metrics
             expect(liteList.clientHeight).to.equal(viewHeight);
             expect(liteList.clientWidth ).to.equal(viewWidth);
-            expect(liteList.rowsPerPage ).to.equal(viewHeight/fullOpts.itemHeight);
+            expect(liteList.rowsPerPage ).to.equal(Math.ceil(viewHeight/fullOpts.itemHeight));
             expect(liteList.itemsPerRow ).to.equal(1);
             expect(liteList.itemsPerPage).to.equal(liteList.rowsPerPage * liteList.itemsPerRow);
             expect(liteList.maxBuffer   ).to.equal(liteList.itemsPerPage * 3);
