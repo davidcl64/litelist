@@ -2,6 +2,8 @@
 
 Virtual list with low DOM overhead
 
+[![Build Status](https://travis-ci.org/davidcl64/litelist.svg?branch=master)](https://travis-ci.org/davidcl64/litelist)
+
 ## About
 
 LiteList is a small library providing an efficient, scrollable view backed by a list containing
