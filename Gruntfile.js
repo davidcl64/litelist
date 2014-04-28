@@ -122,6 +122,7 @@ module.exports = function(grunt) {
 
     grunt.registerTask('test', ['jshint', 'mocha']);
     grunt.registerTask('default', ['connect', 'watch']);
+    grunt.registerTask("travis", ["browserify", "test"]);
 
     // Allow caller to specify reporting.  Watch calls with 'min' for
     // faster build times.
