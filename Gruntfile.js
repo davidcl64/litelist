@@ -13,6 +13,30 @@ module.exports = function(grunt) {
         scroll:  'scroll.js'
     };
 
+    var browsers = [{
+        browserName: "firefox",
+        version: "19",
+        platform: "XP"
+    }, {
+        browserName: "chrome",
+        platform: "XP"
+    }, {
+        browserName: "chrome",
+        platform: "linux"
+    }, {
+        browserName: "internet explorer",
+        platform: "WIN8",
+        version: "10"
+    }, {
+        browserName: "internet explorer",
+        platform: "VISTA",
+        version: "9"
+    }, {
+        browserName: "opera",
+        platform: "Windows 2008",
+        version: "12"
+    }];
+
     grunt.initConfig({
         pkg:      pkg,
         distOpts: distOpts,
@@ -76,6 +100,20 @@ module.exports = function(grunt) {
             }
         },
 
+        'saucelabs-mocha': {
+            all: {
+                options: {
+                    urls: ["http://127.0.0.1:9001/test/index.html"],
+                    tunnelTimeout: 5,
+                    build: process.env.TRAVIS_JOB_ID,
+                    concurrency: 3,
+                    browsers: browsers,
+                    testname: "mocha tests",
+                    tags: ["master"]
+                }
+            }
+        },
+
         jshint: {
             files: ['src/**/*.js'],
             options: {
@@ -122,6 +160,8 @@ module.exports = function(grunt) {
 
     grunt.registerTask('test', ['jshint', 'mocha']);
     grunt.registerTask('default', ['connect', 'watch']);
+
+    grunt.registerTask("testSauce", ["connect", "saucelabs-mocha"]);
 
     // Allow caller to specify reporting.  Watch calls with 'min' for
     // faster build times.

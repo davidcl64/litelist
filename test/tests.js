@@ -180,7 +180,6 @@ describe(["LiteList"], function() {
             expect(liteList.itemsInView.length).to.equal(1);
             expect(liteList.items.length).to.equal(1);
             expect(itemsContainer.style.height).to.equal(fullOpts.itemHeight + "px");
-            console.log(liteList);
         });
 
         it("should be able to push a multiple items", function() {
