@@ -14,9 +14,6 @@
     "dom",
     "overhead"
   ],
-  "scripts": {
-    "test": "grunt testSauce"
-  },
   "author": "David Clarke",
   "license": "MIT",
   "readmeFilename": "README.md",
@@ -38,7 +35,6 @@
     "grunt-mocha": "~0.4.10",
     "chai": "~1.9.1",
     "sinon": "~1.9.1",
-    "sinon-chai": "~2.5.0",
-    "grunt-saucelabs": "~5.1.2"
+    "sinon-chai": "~2.5.0"
   }
 }

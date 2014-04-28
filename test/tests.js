@@ -13,7 +13,7 @@ chai.should();
 var LiteList = require('LiteList');
 var mock     = require('./lib/mock');
 
-describe("LiteList", function() {
+describe(["LiteList"], function() {
     var dataSource = {
         bind: function(/*id, el*/) {},
 
@@ -180,6 +180,7 @@ describe("LiteList", function() {
             expect(liteList.itemsInView.length).to.equal(1);
             expect(liteList.items.length).to.equal(1);
             expect(itemsContainer.style.height).to.equal(fullOpts.itemHeight + "px");
+            console.log(liteList);
         });
 
         it("should be able to push a multiple items", function() {
