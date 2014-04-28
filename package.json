@@ -14,6 +14,9 @@
     "dom",
     "overhead"
   ],
+  "scripts": {
+    "test": "grunt travis"
+  },
   "author": "David Clarke",
   "license": "MIT",
   "readmeFilename": "README.md",
