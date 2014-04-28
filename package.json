@@ -1,6 +1,6 @@
 {
   "name": "litelist",
-  "version": "0.1.0",
+  "version": "0.2.1",
   "main": "dist/litelist.min.js",
   "description": "Virtual list with low DOM overhead",
   "repository": {
