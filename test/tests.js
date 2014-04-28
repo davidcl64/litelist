@@ -5,6 +5,7 @@ var chai   = require('chai');
 var sinon  = require('sinon');
 var expect = chai.expect;
 var pkg    = require('../package.json');
+var utils  = require('./lib/utils');
 
 chai.expect();
 chai.should();
@@ -16,8 +17,8 @@ describe(["LiteList"], function() {
     var dataSource = {
         bind: function(/*id, el*/) {},
 
-        sync: function(id, el/*, itemIdx, item*/) {
-            el.innerText = "innerText[" + id + "]";
+        sync: function(id, el, itemIdx, item) {
+            el.innerText = item.text + "_" + id + "_" + itemIdx;
         },
 
         unbind: function(/*id, el*/) {}
@@ -169,5 +170,53 @@ describe(["LiteList"], function() {
             inViewObj = liteList._createInViewObj({text: 'hello'}, 0);
             expect(itemsContainer.children.length).to.equal(0);
         });
+    });
+
+    describe("push()", function() {
+        it("should be able to push a single item", function() {
+            var liteList = new LiteList(fullOpts);
+
+            liteList.push({text: "hello"});
+            expect(liteList.itemsInView.length).to.equal(1);
+            expect(liteList.items.length).to.equal(1);
+            expect(itemsContainer.style.height).to.equal(fullOpts.itemHeight + "px");
+            console.log(liteList);
+        });
+
+        it("should be able to push a multiple items", function() {
+            var liteList = new LiteList(fullOpts);
+
+            liteList.push.apply(liteList, [0,1,2,3,4].map(function(val) { return {text: "hello " + val}; }));
+            expect(liteList.itemsInView.length).to.equal(5);
+            expect(liteList.items.length).to.equal(5);
+            expect(itemsContainer.style.height).to.equal(fullOpts.itemHeight + "px");
+        });
+
+        it("should grow itemsContainer.height as new rows are added", function() {
+            var liteList = new LiteList(fullOpts);
+            var vals     = new Array(100);
+
+            liteList.push.apply(liteList, utils.array.fill.call(vals, function(val) { return {text: "hello " + val}; }));
+            expect(liteList.itemsInView.length).to.equal(100);
+            expect(liteList.items.length).to.equal(100);
+            expect(itemsContainer.style.height).to.equal((fullOpts.itemHeight * 100/10) + "px");
+        });
+
+        it("should not exceed maxbuffer", function() {
+            var liteList = new LiteList(fullOpts);
+            var vals     = new Array(500);
+
+            liteList.push.apply(liteList, utils.array.fill.call(vals, function(val) { return {text: "hello " + val}; }));
+            expect(liteList.itemsInView.length).to.equal(300);
+            expect(liteList.items.length).to.equal(500);
+            expect(itemsContainer.style.height).to.equal((fullOpts.itemHeight * 500/10) + "px");
+        });
+
+        // Currently this isn't addressed in the code as the actual numbers of items added to the DOM are small
+        // for my use cases.
+        //
+        // Investigation will need to determine how much performance gain can be seen various form factors
+        // and other use cases before determining if the added complexity to the code is worthwhile.
+        it("future performance: should probably limit updates to the DOM when multiple items are added at once");
     });
 });
