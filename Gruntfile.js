@@ -161,7 +161,7 @@ module.exports = function(grunt) {
     grunt.registerTask('test', ['jshint', 'mocha']);
     grunt.registerTask('default', ['connect', 'watch']);
 
-    grunt.registerTask("testSauce", ["connect", "saucelabs-mocha"]);
+    grunt.registerTask("testSauce", ["browserify", "connect", "saucelabs-mocha"]);
 
     // Allow caller to specify reporting.  Watch calls with 'min' for
     // faster build times.

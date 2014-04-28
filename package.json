@@ -15,7 +15,7 @@
     "overhead"
   ],
   "scripts": {
-    "test": "grunt test"
+    "test": "grunt testSauce"
   },
   "author": "David Clarke",
   "license": "MIT",
