@@ -13,7 +13,7 @@ chai.should();
 var LiteList = require('LiteList');
 var mock     = require('./lib/mock');
 
-describe(["LiteList"], function() {
+describe("LiteList", function() {
     var dataSource = {
         bind: function(/*id, el*/) {},
 
