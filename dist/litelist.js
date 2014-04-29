@@ -271,7 +271,7 @@ LiteList.prototype._resizeHandler = function resizeHandler(/*evt*/) {
 };
 
 // Version.
-LiteList.VERSION = '0.1.0';
+LiteList.VERSION = '0.3.0';
 
 
 module.exports = LiteList;
