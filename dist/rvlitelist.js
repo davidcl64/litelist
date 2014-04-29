@@ -1,4 +1,4 @@
-require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({"8W3yvp":[function(require,module,exports){
+!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.RivetsLiteList=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 "use strict";
 
 // Base function.
@@ -275,10 +275,20 @@ LiteList.VERSION = '0.3.0';
 
 
 module.exports = LiteList;
-},{}],"LiteList":[function(require,module,exports){
-module.exports=require('8W3yvp');
-},{}],3:[function(require,module,exports){
-var LiteList = require('./litelist');
+},{}],2:[function(_dereq_,module,exports){
+var LiteList = _dereq_('./litelist');
+var rivets;
+
+// Just here to simplify the initialization logic.  If
+// window doesn't exist, this module is useless anyway
+if(typeof window === 'undefined') { window = {}; }
+
+// The build will declare TWEEN as external. However, if it isn't provided by
+// browserify, we really want to check to see if it was included directly via
+// script tag first.  Only if it isn't will we try a require.  This *should*
+// make it easier to bundle/or not and to use with requirejs...
+rivets = window.rivets || _dereq_("rivets");
+
 
 function RVLiteList(opts) {
     this.liteList    = new LiteList(opts);
@@ -294,7 +304,7 @@ function RVLiteList(opts) {
         this.liteList.push.apply(this.liteList, arguments);
     };
 
-    this.rvView = opts.rivets.bind(document.querySelector(opts.itemsContainer), {items: this.itemsInView}, {
+    this.rvView = rivets.bind(document.querySelector(opts.itemsContainer), {items: this.itemsInView}, {
         binders: {
             top:    function(el, val) { el.style.top    = val + "px"; },
             left:   function(el, val) { el.style.left   = val + "px"; },
@@ -306,4 +316,6 @@ function RVLiteList(opts) {
 module.exports = RVLiteList;
 
 
-},{"./litelist":"8W3yvp"}]},{},[3])
+},{"./litelist":1,"rivets":"4ZwREV"}]},{},[2])
+(2)
+});

@@ -1,4 +1,4 @@
-require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+!function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.LiteList=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 /*
  * raf.js
  * https://github.com/ngryman/raf.js
@@ -40,7 +40,7 @@ require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof requ
 	window.requestAnimationFrame = requestAnimationFrame;
 	window.cancelAnimationFrame = cancelAnimationFrame;
 }(window));
-},{}],"4ZwREV":[function(require,module,exports){
+},{}],2:[function(_dereq_,module,exports){
 // Rivets.js
 // version: 0.6.7
 // author: Michael Richards
@@ -1335,9 +1335,7 @@ require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof requ
 
 }).call(this);
 
-},{}],"rivets":[function(require,module,exports){
-module.exports=require('4ZwREV');
-},{}],4:[function(require,module,exports){
+},{}],3:[function(_dereq_,module,exports){
 // tween.js - http://github.com/sole/tween.js
 /**
  * @author sole / http://soledadpenades.com
@@ -2082,14 +2080,14 @@ TWEEN.Interpolation = {
 };
 
 module.exports=TWEEN;
-},{}],5:[function(require,module,exports){
-var LiteList            = require("./litelist");
-LiteList.RivetsLiteList = require("./rvlitelist");
-LiteList.Scroll         = require("./scroll");
+},{}],4:[function(_dereq_,module,exports){
+var LiteList            = _dereq_("./litelist");
+LiteList.RivetsLiteList = _dereq_("./rvlitelist");
+LiteList.Scroll         = _dereq_("./scroll");
 
 
 module.exports = LiteList;
-},{"./litelist":"8W3yvp","./rvlitelist":8,"./scroll":9}],"8W3yvp":[function(require,module,exports){
+},{"./litelist":5,"./rvlitelist":6,"./scroll":7}],5:[function(_dereq_,module,exports){
 "use strict";
 
 // Base function.
@@ -2366,10 +2364,20 @@ LiteList.VERSION = '0.3.0';
 
 
 module.exports = LiteList;
-},{}],"LiteList":[function(require,module,exports){
-module.exports=require('8W3yvp');
-},{}],8:[function(require,module,exports){
-var LiteList = require('./litelist');
+},{}],6:[function(_dereq_,module,exports){
+var LiteList = _dereq_('./litelist');
+var rivets;
+
+// Just here to simplify the initialization logic.  If
+// window doesn't exist, this module is useless anyway
+if(typeof window === 'undefined') { window = {}; }
+
+// The build will declare TWEEN as external. However, if it isn't provided by
+// browserify, we really want to check to see if it was included directly via
+// script tag first.  Only if it isn't will we try a require.  This *should*
+// make it easier to bundle/or not and to use with requirejs...
+rivets = window.rivets || _dereq_("rivets");
+
 
 function RVLiteList(opts) {
     this.liteList    = new LiteList(opts);
@@ -2385,7 +2393,7 @@ function RVLiteList(opts) {
         this.liteList.push.apply(this.liteList, arguments);
     };
 
-    this.rvView = opts.rivets.bind(document.querySelector(opts.itemsContainer), {items: this.itemsInView}, {
+    this.rvView = rivets.bind(document.querySelector(opts.itemsContainer), {items: this.itemsInView}, {
         binders: {
             top:    function(el, val) { el.style.top    = val + "px"; },
             left:   function(el, val) { el.style.left   = val + "px"; },
@@ -2397,10 +2405,20 @@ function RVLiteList(opts) {
 module.exports = RVLiteList;
 
 
-},{"./litelist":"8W3yvp"}],9:[function(require,module,exports){
-var TWEEN = require("tween.js");
+},{"./litelist":5,"rivets":2}],7:[function(_dereq_,module,exports){
+var TWEEN;
 
-require("raf.js");
+_dereq_("raf.js");
+
+// Just here to simplify the initialization logic.  If
+// window doesn't exist, this module is useless anyway
+if(typeof window === 'undefined') { window = {}; }
+
+// The build will declare TWEEN as external. However, if it isn't provided by
+// browserify, we really want to check to see if it was included directly via
+// script tag first.  Only if it isn't will we try a require.  This *should*
+// make it easier to bundle/or not and to use with requirejs...
+TWEEN = window.TWEEN || _dereq_("tween.js");
 
 function Scroll(viewSelector, listener) {
     var view,
@@ -2540,4 +2558,6 @@ function Scroll(viewSelector, listener) {
 
 module.exports = Scroll;
 
-},{"raf.js":1,"tween.js":4}]},{},[5])
+},{"raf.js":1,"tween.js":3}]},{},[4])
+(4)
+});

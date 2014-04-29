@@ -17,7 +17,7 @@ Couple of notes on that topic:
 
 - For desktop browser support - litelist.js or litelist.min.js will do.  No other dependencies are needed.
 - For mobile support - because mobile browsers don't consistently provide scroll events, additional modules
-  are provided in the litelist.bundled.js/litelist.bundles.min.js:
+  are provided in the litelist.bundled.js/litelist.bundled.min.js:
     - A lightweight scrolling implementation borrowed heavily from [ariya/kinetic](https://github.com/ariya/kinetic)
     - [Tween.JS](https://github.com/sole/tween.js) - for smoother scrolling
     - [raf.js](https://github.com/ngryman/raf.js) - Yet another requestAnimationFrame polyfill.
