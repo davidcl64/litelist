@@ -29,7 +29,7 @@ module.exports = function(grunt) {
                 files:   { 'dist/<%= distOpts.core %>': ['./src/litelist.js'] }
             },
             rvLiteList: {
-                options: { alias: ['./src/litelist.js:LiteList', "rivets:rivets"] },
+                options: { alias: ['./src/litelist.js:LiteList'] },
                 files:   { 'dist/<%= distOpts.rivets %>': ['./src/rvlitelist.js'] }
             },
             scroll: {
