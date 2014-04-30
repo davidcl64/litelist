@@ -10,6 +10,7 @@
  *  margin          : Optional - margin/gutters for the items.  Defaults to: { x: 0, y: 0 };
  *  scrollView      : Required - query selector for the scrollable container
  *  itemsContainer  : Optional - query selector container of the items.  Defaults to the first child of scrollView
+ *  delayBind       : Optional - if true will wait for a call to liteList.bind() to attach any handlers
  *
  *  // The next two are required for a vanilla javascript implementation to be functional.  ListList was
  *  // written to work with the Rivets library which provides this functionality as well.  In that case,
@@ -68,8 +69,10 @@ function LiteList(opts) {
     // Ensure valid view metrics
     this._calcViewMetrics();
 
-    // bind any event handlers now
-    this.bind();
+    // bind any event handlers now if not asked to delay
+    if(!opts.delayBind) {
+        this.bind();
+    }
 
     // If we know about Scroll, attach it now
     this.scroll = LiteList.Scroll ? new LiteList.Scroll(opts.scrollView, this._scrollHandler) : false;

@@ -10,6 +10,7 @@
  *  margin          : Optional - margin/gutters for the items.  Defaults to: { x: 0, y: 0 };
  *  scrollView      : Required - query selector for the scrollable container
  *  itemsContainer  : Optional - query selector container of the items.  Defaults to the first child of scrollView
+ *  delayBind       : Optional - if true will wait for a call to liteList.bind() to attach any handlers
  *
  *  // The next two are required for a vanilla javascript implementation to be functional.  ListList was
  *  // written to work with the Rivets library which provides this functionality as well.  In that case,
@@ -68,8 +69,10 @@ function LiteList(opts) {
     // Ensure valid view metrics
     this._calcViewMetrics();
 
-    // bind any event handlers now
-    this.bind();
+    // bind any event handlers now if not asked to delay
+    if(!opts.delayBind) {
+        this.bind();
+    }
 
     // If we know about Scroll, attach it now
     this.scroll = LiteList.Scroll ? new LiteList.Scroll(opts.scrollView, this._scrollHandler) : false;
@@ -327,30 +330,42 @@ function RVLiteList(opts) {
     this.liteList    = new LiteList(opts);
     this.itemsInView = this.liteList.itemsInView;
 
+    this.rivetsModels = opts.rivetsModels || {};
+    this.rivetsOpts   = opts.rivetsOpts   || {};
+
     this.unbind = function unbind() {
         if(this.rvView) { this.rvView.unbind(); }
 
         this.liteList.unbind();
     };
 
+    function _bind() {
+        this.rvView = rivets.bind(this.liteList.itemsContainer, this.rivetsModels, this.rivetsOpts);
+    }
+
+    this.bind = function bind() {
+        _bind.call(this);
+        this.liteList.bind();
+    };
+
     this.push = function() {
         this.liteList.push.apply(this.liteList, arguments);
     };
 
-    var rivetsModels = opts.rivetsModels || {};
-    var rivetsOpts   = opts.rivetsOpts   || {};
-
     // Overwrite any existing value in the provided model if it exists.
-    rivetsModels.items = this.itemsInView;
+    this.rivetsModels.items = this.itemsInView;
 
     // use provided rivetsOpts and allow custom top, left and height binders if the caller
     // wants to and knows what they are doing...
-    rivetsOpts.binders        = rivetsOpts.binders || {};
-    rivetsOpts.binders.top    = rivetsOpts.binders.top    || function(el, val) { el.style.top    = val + "px"; };
-    rivetsOpts.binders.left   = rivetsOpts.binders.left   || function(el, val) { el.style.left   = val + "px"; };
-    rivetsOpts.binders.height = rivetsOpts.binders.height || function(el, val) { el.style.height = val + "px"; };
+    this.rivetsOpts.binders        = this.rivetsOpts.binders || {};
+    this.rivetsOpts.binders.top    = this.rivetsOpts.binders.top    || function(el, val) { el.style.top    = val + "px"; };
+    this.rivetsOpts.binders.left   = this.rivetsOpts.binders.left   || function(el, val) { el.style.left   = val + "px"; };
+    this.rivetsOpts.binders.height = this.rivetsOpts.binders.height || function(el, val) { el.style.height = val + "px"; };
 
-    this.rvView = rivets.bind(this.liteList.itemsContainer, rivetsModels, rivetsOpts);
+    // Just take care of ourselves during construction so we don't double bind
+    if(!opts.delayBind) {
+        _bind.call(this);
+    }
 }
 
 module.exports = RVLiteList;
