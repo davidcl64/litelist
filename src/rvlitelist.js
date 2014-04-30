@@ -26,7 +26,7 @@ function RVLiteList(opts) {
         this.liteList.push.apply(this.liteList, arguments);
     };
 
-    this.rvView = rivets.bind(document.querySelector(opts.itemsContainer), {items: this.itemsInView}, {
+    this.rvView = rivets.bind(this.liteList.itemsContainer, {items: this.itemsInView}, {
         binders: {
             top:    function(el, val) { el.style.top    = val + "px"; },
             left:   function(el, val) { el.style.left   = val + "px"; },
