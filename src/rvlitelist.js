@@ -12,6 +12,17 @@ if(typeof window === 'undefined') { window = {}; }
 rivets = window.rivets || require("rivets");
 
 
+/*
+ * In addition to the options documented in LiteList
+ *
+ * opts: {
+ *   rivetsModels: { ... }  //  Any additional models that need to be provided for rivets.
+ *                          //  These will be included along with { items: itemsInView }
+ *                          //  when calling rivets.bind.
+ *   rivetsOpts:   { ... }  //  Any additional rivets configuration. Binders for top, left and height
+ *                          //  will be mixed in prior to calling rivets.bind
+ * }
+ */
 function RVLiteList(opts) {
     this.liteList    = new LiteList(opts);
     this.itemsInView = this.liteList.itemsInView;
@@ -26,13 +37,20 @@ function RVLiteList(opts) {
         this.liteList.push.apply(this.liteList, arguments);
     };
 
-    this.rvView = rivets.bind(this.liteList.itemsContainer, {items: this.itemsInView}, {
-        binders: {
-            top:    function(el, val) { el.style.top    = val + "px"; },
-            left:   function(el, val) { el.style.left   = val + "px"; },
-            height: function(el, val) { el.style.height = val + "px"; }
-        }
-    });
+    var rivetsModels = opts.rivetsModels || {};
+    var rivetsOpts   = opts.rivetsOpts   || {};
+
+    // Overwrite any existing value in the provided model if it exists.
+    rivetsModels.items = this.itemsInView;
+
+    // use provided rivetsOpts and allow custom top, left and height binders if the caller
+    // wants to and knows what they are doing...
+    rivetsOpts.binders        = rivetsOpts.binders || {};
+    rivetsOpts.binders.top    = rivetsOpts.binders.top    || function(el, val) { el.style.top    = val + "px"; };
+    rivetsOpts.binders.left   = rivetsOpts.binders.left   || function(el, val) { el.style.left   = val + "px"; };
+    rivetsOpts.binders.height = rivetsOpts.binders.height || function(el, val) { el.style.height = val + "px"; };
+
+    this.rvView = rivets.bind(this.liteList.itemsContainer, rivetsModels, rivetsOpts);
 }
 
 module.exports = RVLiteList;
