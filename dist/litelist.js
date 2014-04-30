@@ -1,15 +1,29 @@
 !function(e){if("object"==typeof exports)module.exports=e();else if("function"==typeof define&&define.amd)define(e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.LiteList=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 "use strict";
 
-// Base function.
+/*
+ * LiteList
+ *
+ * opts: {
+ *  itemWidth       : Optional - width of each item.  If not provide one item per row is assumed
+ *  itemHeight      : Required - height of each item.
+ *  margin          : Optional - margin/gutters for the items.  Defaults to: { x: 0, y: 0 };
+ *  scrollView      : Required - query selector for the scrollable container
+ *  itemsContainer  : Optional - query selector container of the items.  Defaults to the first child of scrollView
+ *
+ *  // The next two are required for a vanilla javascript implementation to be functional.  ListList was
+ *  // written to work with the Rivets library which provides this functionality as well.  In that case,
+ *  // it is optional.  i.e. the LiteList will continue on if these are not provided.
+ *  itemTemplate    : Required - DOM node that will be cloned as a template for each item.
+ *  dataSource      : Required - Implementation of the dataSource contract (see below for more details).
+ * }
+ */
 function LiteList(opts) {
     this.itemsInView     = [];
     this.items           = [];
     this.itemWidth       = opts.itemWidth || 0;
     this.itemHeight      = opts.itemHeight;
     this.margin          = opts.margin || { x: 0, y: 0 };
-    this.view            = document.querySelector(opts.scrollView);
-    this.itemsContainer  = opts.itemsContainer ? document.querySelector(opts.itemsContainer) : false;
     this.dataSource      = opts.dataSource || false;
     this.itemTemplate    = opts.itemTemplate || false;
     this.scrollTop       = 0;
@@ -23,6 +37,14 @@ function LiteList(opts) {
     this.itemsPerRow     = 0;
     this.itemsPerPage    = 0;
     this.maxBuffer       = 0;
+
+    // Get the container elements
+    this.view            = opts.scrollView;
+    this.itemsContainer  = opts.itemsContainer || false;
+
+    // If it is a string, it should be a query selector - otherwise we are expecting an element.
+    this.view            = (typeof this.view           === 'string' || this.view instanceof String)           ? document.querySelector(this.view)           : this.view;
+    this.itemsContainer  = (typeof this.itemsContainer === 'string' || this.itemsContainer instanceof String) ? document.querySelector(opts.itemsContainer) : this.itemsContainer;
 
     // Keep track of a unique id for viewItems - allows This is passed to
     // datasource providers to aid in tracking.
