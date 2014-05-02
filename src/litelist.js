@@ -1,14 +1,27 @@
-"use strict";
-
-// Base function.
+/*
+ * LiteList
+ *
+ * opts: {
+ *  itemWidth       : Optional - width of each item.  If not provide one item per row is assumed
+ *  itemHeight      : Required - height of each item.
+ *  margin          : Optional - margin/gutters for the items.  Defaults to: { x: 0, y: 0 };
+ *  scrollView      : Required - query selector for the scrollable container
+ *  itemsContainer  : Optional - query selector container of the items.  Defaults to the first child of scrollView
+ *  delayBind       : Optional - if true will wait for a call to liteList.bind() to attach any handlers
+ *
+ *  // The next two are required for a vanilla javascript implementation to be functional.  ListList was
+ *  // written to work with the Rivets library which provides this functionality as well.  In that case,
+ *  // it is optional.  i.e. the LiteList will continue on if these are not provided.
+ *  itemTemplate    : Required - DOM node that will be cloned as a template for each item.
+ *  dataSource      : Required - Implementation of the dataSource contract (see below for more details).
+ * }
+ */
 function LiteList(opts) {
     this.itemsInView     = [];
     this.items           = [];
     this.itemWidth       = opts.itemWidth || 0;
     this.itemHeight      = opts.itemHeight;
     this.margin          = opts.margin || { x: 0, y: 0 };
-    this.view            = document.querySelector(opts.scrollView);
-    this.itemsContainer  = opts.itemsContainer ? document.querySelector(opts.itemsContainer) : false;
     this.dataSource      = opts.dataSource || false;
     this.itemTemplate    = opts.itemTemplate || false;
     this.scrollTop       = 0;
@@ -23,12 +36,21 @@ function LiteList(opts) {
     this.itemsPerPage    = 0;
     this.maxBuffer       = 0;
 
+    // Get the container elements
+    this.view            = opts.scrollView;
+    this.itemsContainer  = opts.itemsContainer || false;
+
+    // If it is a string, it should be a query selector - otherwise we are expecting an element.
+    this.view            = (typeof this.view           === 'string' || this.view instanceof String)           ? document.querySelector(this.view)           : this.view;
+    this.itemsContainer  = (typeof this.itemsContainer === 'string' || this.itemsContainer instanceof String) ? document.querySelector(opts.itemsContainer) : this.itemsContainer;
+
     // Keep track of a unique id for viewItems - allows This is passed to
     // datasource providers to aid in tracking.
     this._id = 0;
 
     // Keeps track of the old first visible portion of the list
     this._oldStart = 0;
+    this._oldEnd   = 0;
 
     // If not passed a page selector, assume it's the first child
     if(!this.itemsContainer) {
@@ -45,8 +67,10 @@ function LiteList(opts) {
     // Ensure valid view metrics
     this._calcViewMetrics();
 
-    // bind any event handlers now
-    this.bind();
+    // bind any event handlers now if not asked to delay
+    if(!opts.delayBind) {
+        this.bind();
+    }
 
     // If we know about Scroll, attach it now
     this.scroll = LiteList.Scroll ? new LiteList.Scroll(opts.scrollView, this._scrollHandler) : false;
@@ -144,33 +168,46 @@ LiteList.prototype._positionViewItem = function positionViewItem(viewItem, force
 };
 
 LiteList.prototype.__ensureVisible = function _ensureVisible() {
-    var bufferHeight  = this.itemsInView.length * this.itemHeight/this.itemsPerRow + this.itemsInView.length * this.margin.y/this.itemsPerRow;
-    var percentInView = ((this.scrollTop - bufferHeight/3) / (this.itemsInView.height - this.clientHeight));
+    var percentInViewStart = ((this.scrollTop) / (this.itemsInView.height));
+    var percentInViewEnd   = ((this.scrollTop + this.clientHeight) / (this.itemsInView.height));
 
-    if(percentInView < 0) { percentInView = 0; }
-    var newStart = Math.floor(percentInView * this.items.length);
+    if(percentInViewStart < 0) { percentInViewStart = 0; }
+    var newStart = Math.floor(percentInViewStart * this.items.length);
+    var newEnd   = Math.ceil (percentInViewEnd   * this.items.length);
     var i;
     var viewItem;
+    var newIdx;
 
-    if(newStart < this._oldStart) {
-        for(i = newStart; i < this._oldStart; ++i) {
+    this._firstVisibleItem = Math.floor(this.scrollTop / (this.itemHeight + this.margin.y)) * this.itemsPerRow;
+    this._lastVisibleItem  = Math.ceil ((this.scrollTop + this.clientHeight)/(this.itemHeight + this.margin.y)) * this.itemsPerRow;
+
+    if(this.direction < 0) {
+        for (i = this._oldEnd; i > newEnd + this.itemsPerRow; --i) {
             viewItem = this.itemsInView[i % this.itemsInView.length];
 
-            viewItem.idx = viewItem.idx - this.itemsInView.length;
-            this._positionViewItem(viewItem);
-        }
-    } else if(newStart > this._oldStart) {
-        for(i = this._oldStart; i < newStart ; ++i) {
-            viewItem = this.itemsInView[i % this.itemsInView.length];
+            newIdx = i - this.itemsInView.length;
 
-            viewItem.idx = viewItem.idx + this.itemsInView.length;
-            if(viewItem.idx < this.items.length) {
+            if (newIdx >= 0) {
+                viewItem.idx = newIdx;
                 this._positionViewItem(viewItem);
             }
         }
+        this._oldEnd = i;
+        this._oldStart   = Math.max(this._oldEnd - this.itemsInView.length, 0);
+    } else {
+        for(i = this._oldStart; i < newStart - this.itemsPerRow; ++i) {
+            viewItem = this.itemsInView[i % this.itemsInView.length];
+
+            newIdx = i + this.itemsInView.length;
+            if(newIdx < this.items.length) {
+                viewItem.idx = newIdx;
+                this._positionViewItem(viewItem);
+            }
+        }
+        this._oldStart   = i === 0 ? 0 : i - 1;
+        this._oldEnd     = Math.min(this._oldStart + this.itemsInView.length, this.items.length - 1);
     }
 
-    this._oldStart   = newStart;
     this.dirtyResize = false;
     this.ticking     = false;
 };
@@ -232,6 +269,16 @@ LiteList.prototype.push = function push() {
     var i       = 0;
     var argsIdx = this.items.length;
     var inViewObj;
+    var needsReset = false;
+    var maxIdx  = this.itemsLength;
+
+    if(this.itemsInView.length >= this.maxBuffer) {
+        maxIdx = this.itemsInView.reduce(function(prev, cur) {
+            return prev.idx > cur.idx ? prev : cur;
+        }, this.itemsInView[0] || {idx: 0}).idx;
+
+        if(maxIdx === this.items.length - 1) { needsReset = true; }
+    }
 
     this.items.push.apply(this.items, args);
     while(this.itemsInView.length < this.maxBuffer && i < args.length) {
@@ -241,6 +288,18 @@ LiteList.prototype.push = function push() {
 
         i = i + 1;
         argsIdx = argsIdx + 1;
+    }
+
+    // Nuclear option for now.  This can be optimized for difference use cases:
+    // - at end of list/end of list visible
+    // - end of list not visible
+    // - remove from DOM/display: none then render/replace?
+    if(needsReset) {
+        for(i = 0; i < this.itemsInView.length; ++i) {
+            this.itemsInView[i].idx = i;
+            this._positionViewItem(this.itemsInView[i]);
+        }
+        this._oldStart = 0;
     }
 
     this._calcDocHeight();
@@ -260,7 +319,10 @@ LiteList.prototype.unbind = function unbind() {
 };
 
 LiteList.prototype._scrollHandler = function scrollHandler(/*evt*/) {
-    this.scrollTop  = this.view.scrollTop;
+    var scrollTop   = this.view.scrollTop;
+
+    this.direction  = scrollTop > this.scrollTop ? 1 : -1;
+    this.scrollTop  = scrollTop;
     this._requestTick();
 };
 

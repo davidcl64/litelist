@@ -27,14 +27,15 @@
     </div>
 </div>
 
-<!-- rivets.js is bundled in -->
+<!-- Neither of these are bundled in.  Specifying them here -->
+<script src="rivets/dist/rivets.js"></script>
+<script src="/tweenjs/src/Tween.js"></script>
+
+<!-- includes everything *but* rivets -->
 <script src="litelist.bundled.js"></script>
 
 <script>
     !(function() {
-        var rivets     = require("rivets");
-        var LiteList   = require("LiteList");
-
         var scrollView = document.querySelector(".scrollView");
         var template   = document.querySelector(".items").cloneNode(true);
         var control    = document.querySelector(".control");
@@ -49,14 +50,16 @@
                 itemHeight:     300,
                 margin:         { x: 10, y: 10 },
                 scrollView:     ".scrollView",
-                itemsContainer: ".items"
+                itemsContainer: ".items",
+                rivets:         window.rivets
             },
 
             list: {
                 itemHeight:     40,
                 margin:         { x: 0, y: 0 },
                 scrollView:     ".scrollView",
-                itemsContainer: ".items"
+                itemsContainer: ".items",
+                rivets:         window.rivets
             }
         }
 

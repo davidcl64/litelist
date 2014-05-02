@@ -1,6 +1,16 @@
-var TWEEN = require("tween.js");
+var TWEEN;
 
 require("raf.js");
+
+// Just here to simplify the initialization logic.  If
+// window doesn't exist, this module is useless anyway
+if(typeof window === 'undefined') { window = {}; }
+
+// The build will declare TWEEN as external. However, if it isn't provided by
+// browserify, we really want to check to see if it was included directly via
+// script tag first.  Only if it isn't will we try a require.  This *should*
+// make it easier to bundle/or not and to use with requirejs...
+TWEEN = window.TWEEN || require("tween.js");
 
 function Scroll(viewSelector, listener) {
     var view,
