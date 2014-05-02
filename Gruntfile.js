@@ -21,7 +21,7 @@ module.exports = function(grunt) {
         browserify: {
             bundled: {
                 // alias will both alias and expose require
-                options: { bundleOptions: { standalone: "LiteList" } },
+                options: { bundleOptions: { standalone: "LiteList" }, external: ["rivets", "tween.js"] },
                 files:   { 'dist/<%= distOpts.bundled %>': ['./src/bundled.js'] }
             },
             liteList: {
