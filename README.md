@@ -16,11 +16,13 @@ potentially thousands of entries.
 Couple of notes on that topic:
 
 - For desktop browser support - litelist.js or litelist.min.js will do.  No other dependencies are needed.
-- For mobile support - because mobile browsers don't consistently provide scroll events, additional modules
-  are provided in the litelist.bundled.js/litelist.bundled.min.js:
-    - A lightweight scrolling implementation borrowed heavily from [ariya/kinetic](https://github.com/ariya/kinetic)
+- For mobile support - because mobile browsers don't consistently provide scroll events, a scrolling module
+  borrowed heavily from [ariya/kinetic](https://github.com/ariya/kinetic) is bundled in with the library. If
+  used, you will either need to create a custom build with [Tween.JS](https://github.com/sole/tween.js) or
+  reference it in your markup. Additional modules for mobile scrolling include:
+    - A lightweight scrolling implementation borrowed heavily from [ariya/kinetic](https://github.com/ariya/kinetic) (bundled)
     - [Tween.JS](https://github.com/sole/tween.js) - for smoother scrolling
-    - [raf.js](https://github.com/ngryman/raf.js) - Yet another requestAnimationFrame polyfill.
+    - [raf.js](https://github.com/ngryman/raf.js) - Yet another requestAnimationFrame polyfill (bundled).
 
 ## Usage
 
@@ -48,7 +50,7 @@ LiteList was written to work with the excellent [Rivets library](https://github.
 the heavy lifting for the data binding and managing the DOM.  For a more thorough example of how to implement this
 using Rivets, see the [Rivets demo](https://github.com/davidcl64/litelist/demo).
 
-Rivets support is included in the bundled libraries or can be included separately (rvlitelist.js/rvlitelist.min.js).
+Rivets is not in the bundled libraries it can be included separately when needed or you can create a custom bundle.
 
     var rvLiteList = new LiteList.RivetsLiteList({
         itemWidth       : Optional - width of each item.  If not provide one item per row is assumed
