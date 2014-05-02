@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Visual layout view</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="/assets/main.css">
+    <link rel="stylesheet" href="assets/visual.css">
+</head>
+<body>
+<div class="control row">
+    <input type="radio" name="listStyle" value="grid" rv-checked="view.type">Grid</input>
+    <input type="radio" name="listStyle" value="list" rv-checked="view.type">List</input>
+</div>
+<div class="viewBuffer row" rv-trigger-first="list._firstVisibleItem" rv-trigger-last="list._lastVisibleItem"><div rv-each-item="items" rv-color="item.color | background-color" rv-text="item.color | color-text"></div></div>
+
+<div class="overflowOn row col">
+    <div class="items row" rv-height="items.height" rv-top="liteList.scrollTop | scrollTop">
+        <div class="item" rv-each-item="items" rv-top="item.top" rv-left="item.left">
+            <div rv-text="item.idx"></div>
+        </div>
+    </div>
+</div>
+
+<div class="scrollView row col scroll-y">
+    <div class="items row" rv-height="items.height">
+        <div class="item" rv-each-item="items" rv-top="item.top" rv-left="item.left">
+            <div rv-text="item.idx"></div>
+        </div>
+    </div>
+</div>
+
+<script src="/rivets/dist/rivets.js"></script>
+
+<!-- includes everything *but* rivets -->
+<script src="/litelist.bundled.js"></script>
+
+<script>
+    !(function() {
+        var scrollView   = document.querySelector(".scrollView");
+        var template     = document.querySelector(".scrollView .items").cloneNode(true);
+        var control      = document.querySelector(".control");
+        var buffView     = document.querySelector(".viewBuffer");
+        var overflowView = document.querySelector(".overflowOn");
+        var view         = {type: "grid"};
+        var rvScroller;
+
+        var rvView     = rivets.bind(control, {view: view});
+        var rvBuffView;
+        var rvOverflowView;
+
+        var scrollerOpts = {
+            grid: {
+                itemWidth:      50,
+                itemHeight:     60,
+                margin:         { x: 10, y: 10 },
+                scrollView:     ".scrollView",
+                itemsContainer: ".scrollView .items",
+                rivets:         window.rivets
+            },
+
+            list: {
+                itemHeight:     40,
+                margin:         { x: 0, y: 0 },
+                scrollView:     ".scrollView",
+                itemsContainer: ".scrollView .items",
+                rivets:         window.rivets
+            }
+        };
+
+        rivets.adapters['.'].subscribe(view, "type", function() {
+            if(rvScroller)     { rvScroller.unbind(); }
+            if(rvBuffView)     { rvBuffView.unbind(); }
+            if(rvOverflowView) { rvOverflowView.unbind(); }
+
+            scrollView.innerHTML = "";
+            scrollView.appendChild(template.cloneNode(true));
+            setupScroller(view.type);
+        });
+
+        function trigger() {
+            rvScroller.itemsInView.forEach(function(item) {
+                if(item.idx < rvScroller.liteList._firstVisibleItem) {
+                    item.color = "before";
+                } else if(item.idx <= rvScroller.liteList._lastVisibleItem) {
+                    item.color = "inView";
+                } else {
+                    item.color = "after";
+                }
+            });
+        }
+
+        function setupScroller(type) {
+            scrollView.classList.remove("grid", "list");
+            scrollView.classList.add(type);
+
+            overflowView.classList.remove("grid", "list");
+            overflowView.classList.add(type);
+
+
+            rvScroller = new LiteList.RivetsLiteList(scrollerOpts[type]);
+            rvBuffView = rivets.bind(buffView, { list: rvScroller.liteList, items: rvScroller.itemsInView }, {
+                binders: {
+                    "trigger-first": trigger,
+                    "trigger-last":  trigger,
+
+                    color: function(el, color) {
+                        el.style.backgroundColor = color;
+                    }
+                },
+
+                formatters: {
+                    "background-color": function(loc) {
+                        switch(loc) {
+                            case "before":
+                                return "yellow";
+
+                            case "inView":
+                                return "green";
+
+                            default:
+                                return "red";
+                        }
+                    },
+                    "color-text": function(loc) {
+                        switch(loc) {
+                            case "before":
+                                return "<";
+
+                            case "inView":
+                                return "*";
+
+                            default:
+                                return ">";
+                        }
+                    }
+                }
+            });
+
+            rvOverflowView = rivets.bind(overflowView, {liteList: rvScroller.liteList, items: rvScroller.itemsInView}, {
+                binders: {
+                    top:    function(el, val) { el.style.top    = val + "px"; },
+                    left:   function(el, val) { el.style.left   = val + "px"; },
+                    height: function(el, val) { el.style.height = val + "px"; }
+                },
+
+                formatters: {
+                    scrollTop: function(val) { return -1 * val; }
+                }
+            });
+
+            var i;
+            // Setup for demo
+            (function() {
+                var imgUrl = type === "grid" ? "http://placekitten.com/180/180?image="
+                        : "http://placekitten.com/35/35?image="
+                for(i = 0; i < 100; ++i) {
+
+                    rvScroller.push({
+                        imgSrc:  imgUrl + (i%16),
+                        name: "Item " + i,
+                        price: "0.00"
+                    });
+                }
+            })();
+        }
+
+        setupScroller("grid");
+        // For Demo
+//        setInterval(function() {
+//            rvScroller.push({
+//                imgSrc: "http://placekitten.com/180/180?image=" + (i%16),
+//                name: "Item " + i++,
+//                price: "0.00"
+//            });
+//        }, 2000);
+    })();
+</script>
+</body>
+</html>

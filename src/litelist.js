@@ -1,5 +1,3 @@
-"use strict";
-
 /*
  * LiteList
  *
@@ -52,6 +50,7 @@ function LiteList(opts) {
 
     // Keeps track of the old first visible portion of the list
     this._oldStart = 0;
+    this._oldEnd   = 0;
 
     // If not passed a page selector, assume it's the first child
     if(!this.itemsContainer) {
@@ -169,33 +168,46 @@ LiteList.prototype._positionViewItem = function positionViewItem(viewItem, force
 };
 
 LiteList.prototype.__ensureVisible = function _ensureVisible() {
-    var bufferHeight  = this.itemsInView.length * this.itemHeight/this.itemsPerRow + this.itemsInView.length * this.margin.y/this.itemsPerRow;
-    var percentInView = ((this.scrollTop - bufferHeight/3) / (this.itemsInView.height - this.clientHeight));
+    var percentInViewStart = ((this.scrollTop) / (this.itemsInView.height));
+    var percentInViewEnd   = ((this.scrollTop + this.clientHeight) / (this.itemsInView.height));
 
-    if(percentInView < 0) { percentInView = 0; }
-    var newStart = Math.floor(percentInView * this.items.length);
+    if(percentInViewStart < 0) { percentInViewStart = 0; }
+    var newStart = Math.floor(percentInViewStart * this.items.length);
+    var newEnd   = Math.ceil (percentInViewEnd   * this.items.length);
     var i;
     var viewItem;
+    var newIdx;
 
-    if(newStart < this._oldStart) {
-        for(i = newStart; i < this._oldStart; ++i) {
+    this._firstVisibleItem = Math.floor(this.scrollTop / (this.itemHeight + this.margin.y)) * this.itemsPerRow;
+    this._lastVisibleItem  = Math.ceil ((this.scrollTop + this.clientHeight)/(this.itemHeight + this.margin.y)) * this.itemsPerRow;
+
+    if(this.direction < 0) {
+        for (i = this._oldEnd; i > newEnd + this.itemsPerRow; --i) {
             viewItem = this.itemsInView[i % this.itemsInView.length];
 
-            viewItem.idx = viewItem.idx - this.itemsInView.length;
-            this._positionViewItem(viewItem);
-        }
-    } else if(newStart > this._oldStart) {
-        for(i = this._oldStart; i < newStart ; ++i) {
-            viewItem = this.itemsInView[i % this.itemsInView.length];
+            newIdx = i - this.itemsInView.length;
 
-            viewItem.idx = viewItem.idx + this.itemsInView.length;
-            if(viewItem.idx < this.items.length) {
+            if (newIdx >= 0) {
+                viewItem.idx = newIdx;
                 this._positionViewItem(viewItem);
             }
         }
+        this._oldEnd = i;
+        this._oldStart   = Math.max(this._oldEnd - this.itemsInView.length, 0);
+    } else {
+        for(i = this._oldStart; i < newStart - this.itemsPerRow; ++i) {
+            viewItem = this.itemsInView[i % this.itemsInView.length];
+
+            newIdx = i + this.itemsInView.length;
+            if(newIdx < this.items.length) {
+                viewItem.idx = newIdx;
+                this._positionViewItem(viewItem);
+            }
+        }
+        this._oldStart   = i === 0 ? 0 : i - 1;
+        this._oldEnd     = Math.min(this._oldStart + this.itemsInView.length, this.items.length - 1);
     }
 
-    this._oldStart   = newStart;
     this.dirtyResize = false;
     this.ticking     = false;
 };
@@ -257,6 +269,16 @@ LiteList.prototype.push = function push() {
     var i       = 0;
     var argsIdx = this.items.length;
     var inViewObj;
+    var needsReset = false;
+    var maxIdx  = this.itemsLength;
+
+    if(this.itemsInView.length >= this.maxBuffer) {
+        maxIdx = this.itemsInView.reduce(function(prev, cur) {
+            return prev.idx > cur.idx ? prev : cur;
+        }, this.itemsInView[0] || {idx: 0}).idx;
+
+        if(maxIdx === this.items.length - 1) { needsReset = true; }
+    }
 
     this.items.push.apply(this.items, args);
     while(this.itemsInView.length < this.maxBuffer && i < args.length) {
@@ -266,6 +288,14 @@ LiteList.prototype.push = function push() {
 
         i = i + 1;
         argsIdx = argsIdx + 1;
+    }
+
+    if(needsReset) {
+        for(i = 0; i < this.itemsInView.length; ++i) {
+            this.itemsInView[i].idx = i;
+            this._positionViewItem(this.itemsInView[i]);
+        }
+        this._oldStart = 0;
     }
 
     this._calcDocHeight();
@@ -285,7 +315,10 @@ LiteList.prototype.unbind = function unbind() {
 };
 
 LiteList.prototype._scrollHandler = function scrollHandler(/*evt*/) {
-    this.scrollTop  = this.view.scrollTop;
+    var scrollTop   = this.view.scrollTop;
+
+    this.direction  = scrollTop > this.scrollTop ? 1 : -1;
+    this.scrollTop  = scrollTop;
     this._requestTick();
 };
 
