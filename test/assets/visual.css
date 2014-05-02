@@ -30,3 +30,10 @@
     width:   50px;
     height:  60px;
 }
+
+.list .item {
+    padding: 2px;
+    left:    0;
+    right:   0;
+    height:  20px;
+}

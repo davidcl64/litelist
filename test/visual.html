@@ -48,6 +48,7 @@
         var control      = document.querySelector(".control");
         var buffView     = document.querySelector(".viewBuffer");
         var overflowView = document.querySelector(".overflowOn");
+        var templateOFV  = document.querySelector(".overflowOn .items").cloneNode(true);
         var view         = {type: "grid"};
         var rvScroller;
 
@@ -66,7 +67,7 @@
             },
 
             list: {
-                itemHeight:     40,
+                itemHeight:     20,
                 margin:         { x: 0, y: 0 },
                 scrollView:     ".scrollView",
                 itemsContainer: ".scrollView .items",
@@ -81,6 +82,9 @@
 
             scrollView.innerHTML = "";
             scrollView.appendChild(template.cloneNode(true));
+
+            overflowView.innerHTML = "";
+            overflowView.appendChild(templateOFV.cloneNode(true));
             setupScroller(view.type);
         });
 
