@@ -290,6 +290,10 @@ LiteList.prototype.push = function push() {
         argsIdx = argsIdx + 1;
     }
 
+    // Nuclear option for now.  This can be optimized for difference use cases:
+    // - at end of list/end of list visible
+    // - end of list not visible
+    // - remove from DOM/display: none then render/replace?
     if(needsReset) {
         for(i = 0; i < this.itemsInView.length; ++i) {
             this.itemsInView[i].idx = i;
