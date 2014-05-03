@@ -368,12 +368,34 @@ LiteList.prototype.unbind = function unbind() {
     if(this.scroll) { this.scroll.unbind(); }
 };
 
+LiteList.prototype.clear = function clear() {
+    var callUnbind = (this.dataSource && this.dataSource.unbind);
+
+    this.view.scrollTop = this.scrollTop = 0;
+    this._oldStart = this._oldEnd = 0;
+
+    // If we were given an item template, we need remove any nodes we've added
+    if(this.itemTemplate) {
+        this.itemsInView.forEach(function(item) {
+            if(item.el)    { this.itemsContainer.removeChild(item.el); }
+            if(callUnbind) { this.dataSource.unbind(item.id, item.el); }
+        }.bind(this));
+    }
+
+    this.itemsInView.splice(0, Number.MAX_VALUE);
+    this.items      .splice(0, Number.MAX_VALUE);
+
+    this._calcDocHeight();
+};
+
 LiteList.prototype._scrollHandler = function scrollHandler(/*evt*/) {
     var scrollTop   = this.view.scrollTop;
 
-    this.direction  = scrollTop > this.scrollTop ? 1 : -1;
-    this.scrollTop  = scrollTop;
-    this._requestTick();
+    if(scrollTop !== this.scrollTop) {
+        this.direction  = scrollTop > this.scrollTop ? 1 : -1;
+        this.scrollTop  = scrollTop;
+        this._requestTick();
+    }
 };
 
 LiteList.prototype._resizeHandler = function resizeHandler(/*evt*/) {
@@ -436,6 +458,10 @@ function RVLiteList(opts) {
 
     this.push = function() {
         this.liteList.push.apply(this.liteList, arguments);
+    };
+
+    this.clear = function() {
+        this.liteList.clear();
     };
 
     // Overwrite any existing value in the provided model if it exists.
