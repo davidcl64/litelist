@@ -219,4 +219,17 @@ describe(["LiteList"], function() {
         // and other use cases before determining if the added complexity to the code is worthwhile.
         it("future performance: should probably limit updates to the DOM when multiple items are added at once");
     });
+
+    describe("clear()", function() {
+        it("should clear all items from the list", function() {
+            var liteList = new LiteList(fullOpts);
+            var vals     = new Array(100);
+
+            liteList.push.apply(liteList, utils.array.fill.call(vals, function(val) { return {text: "hello " + val}; }));
+            liteList.clear();
+            expect(liteList.itemsInView.length).to.equal(0);
+            expect(liteList.items.length).to.equal(0);
+            expect(itemsContainer.style.height).to.equal("0px");
+        });
+    });
 });
