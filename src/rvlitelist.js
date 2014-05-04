@@ -37,7 +37,7 @@ function RVLiteList(opts) {
     };
 
     function _bind() {
-        this.rvView = rivets.bind(this.liteList.itemsContainer, this.rivetsModels, this.rivetsOpts);
+        this.rvView = rivets.bind(this.liteList.view, this.rivetsModels, this.rivetsOpts);
     }
 
     this.bind = function bind() {
