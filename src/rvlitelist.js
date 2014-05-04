@@ -49,6 +49,10 @@ function RVLiteList(opts) {
         this.liteList.push.apply(this.liteList, arguments);
     };
 
+    this.clear = function() {
+        this.liteList.clear();
+    };
+
     // Overwrite any existing value in the provided model if it exists.
     this.rivetsModels.items = this.itemsInView;
 

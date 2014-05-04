@@ -110,6 +110,10 @@
 
 
             rvScroller = new LiteList.RivetsLiteList(scrollerOpts[type]);
+
+            // Expose it on window so we can mess with it in the console
+            window.myList = rvScroller;
+
             rvBuffView = rivets.bind(buffView, { list: rvScroller.liteList, items: rvScroller.itemsInView }, {
                 binders: {
                     "trigger-first": trigger,
