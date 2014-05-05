@@ -338,6 +338,64 @@ LiteList.prototype.clear = function clear() {
     this._calcDocHeight();
 };
 
+LiteList.prototype.forEach = function forEach(/*fn, thisArg*/) {
+    return this.items.forEach.apply(arguments);
+};
+
+LiteList.prototype.remove = function remove(searchIdx) {
+    var idxToRemove = false;
+
+    // If searchIdx >= the total number of items in the list, throw an error
+    if(searchIdx >= this.items.length) {
+        throw new Error("index out of bounds");
+    }
+
+    // Remove it from items
+    this.items.splice(searchIdx, 1);
+
+    this.itemsInView.forEach(function(val, idx) {
+        if(val.idx >= searchIdx) {
+
+            // If it is the last item in the list, the view buffer
+            // entry needs to move back to the front of the current
+            // buffer
+            if(val.idx >= this.items.length) {
+                val.idx = val.idx - this.itemsInView.length;
+
+                // If less than zero, that means the view buffer needs
+                // to shrink.
+                if(val.idx < 0) {
+                    val = false;
+                    idxToRemove = idx;
+                }
+            }
+
+            if(val) {
+                this._positionViewItem(val, true);
+            }
+        }
+    }, this);
+
+    // Shrink the view buffer if necessary.
+    if(idxToRemove) {
+        var item = this.itemsInView[idxToRemove];
+
+        // If we are managing the dom, need to remove the actual element
+        if(this.itemTemplate) {
+            if(this.dataSource && this.dataSource.unbind) {
+                this.dataSource.unbind(item.id, item.el);
+            }
+
+            this.itemsContainer.removeChild(item.el);
+        }
+
+        this.itemsInView.splice(idxToRemove,1);
+    }
+
+    // Update doc height
+    this._calcDocHeight();
+};
+
 LiteList.prototype._scrollHandler = function scrollHandler(/*evt*/) {
     var scrollTop   = this.view.scrollTop;
 

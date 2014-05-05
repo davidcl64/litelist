@@ -17,22 +17,34 @@
 <div class="control row">
     <input type="radio" name="listStyle" value="grid" rv-checked="view.type">Grid</input>
     <input type="radio" name="listStyle" value="list" rv-checked="view.type">List</input>
+    <input type="checkbox" name="useRivets" value="useRivets" rv-checked="view.useRivets">Use rivets?</input>
 </div>
-<div class="viewBuffer row" rv-trigger-first="list._firstVisibleItem" rv-trigger-last="list._lastVisibleItem"><div rv-each-item="items" rv-color="item.color | background-color" rv-text="item.color | color-text"></div></div>
+<div class="viewBuffer row" rv-trigger-first="list._firstVisibleItem" rv-trigger-last="list._lastVisibleItem">
+    <div rv-each-item="items" rv-color="item.color | background-color" rv-text="item.color | color-text"></div>
+</div>
 
-<div class="overflowOn row col">
-    <div class="items row" rv-height="items.height" rv-top="liteList.scrollTop | scrollTop">
-        <div class="item" rv-each-item="items" rv-top="item.top" rv-left="item.left">
-            <div rv-text="item.idx"></div>
+<div class="listCtrl col">
+    <div class="overflowOn row col">
+        <div class="items row" rv-height="items.height" rv-top="liteList.scrollTop | scrollTop">
+            <div class="item" rv-each-item="items" rv-top="item.top" rv-left="item.left">
+                <div>{item.item.val}[{item.idx}]</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="scrollView row col scroll-y">
+        <div class="items row" rv-height="items.height">
+            <div class="item" rv-each-item="items" rv-top="item.top" rv-left="item.left">
+                <div rv-text="item.item.val"></div>
+            </div>
         </div>
     </div>
 </div>
 
-<div class="scrollView row col scroll-y">
-    <div class="items row" rv-height="items.height">
-        <div class="item" rv-each-item="items" rv-top="item.top" rv-left="item.left">
-            <div rv-text="item.idx"></div>
-        </div>
+<div class="props col">
+    <div>
+        <input type="text" rv-value="props.remove.idx"/>
+        <button rv-on-click="props.remove.action">remove</button>
     </div>
 </div>
 
@@ -46,37 +58,64 @@
     !(function() {
         var scrollView   = document.querySelector(".scrollView");
         var template     = document.querySelector(".scrollView .items").cloneNode(true);
+        var itemTemplate = document.querySelector(".scrollView .items .item").cloneNode(true);
         var control      = document.querySelector(".control");
         var buffView     = document.querySelector(".viewBuffer");
         var overflowView = document.querySelector(".overflowOn");
+        var propsView    = document.querySelector(".props");
         var templateOFV  = document.querySelector(".overflowOn .items").cloneNode(true);
-        var view         = {type: "grid"};
-        var rvScroller;
+        var view         = {type: "grid", useRivets: true};
+        var rvScroller, liteList;
 
         var rvView     = rivets.bind(control, {view: view});
         var rvBuffView;
         var rvOverflowView;
 
-        var scrollerOpts = {
-            grid: {
-                itemWidth:      50,
-                itemHeight:     60,
-                margin:         { x: 10, y: 10 },
-                scrollView:     ".scrollView",
-                itemsContainer: ".scrollView .items",
-                rivets:         window.rivets
-            },
+        var props        = {
+            remove: {
+                idx: 0,
+                action: function(evt, ctx) {
+                    rvScroller.remove(ctx.props.remove.idx);
+                }
+            }
+        };
+        var rvPropsView  = rivets.bind(propsView, {props: props});
 
-            list: {
-                itemHeight:     20,
-                margin:         { x: 0, y: 0 },
-                scrollView:     ".scrollView",
-                itemsContainer: ".scrollView .items",
-                rivets:         window.rivets
+        // For the non-rivets version
+        var dataSource = {
+            sync: function(id, el, itemIdx, item) {
+                el.innerText = item.val;
             }
         };
 
-        rivets.adapters['.'].subscribe(view, "type", function() {
+        function getScrollerOpts() {
+            return {
+                grid: {
+                    itemWidth:      50,
+                    itemHeight:     60,
+                    margin:         { x: 10, y: 10 },
+                    scrollView:     ".scrollView",
+                    itemsContainer: ".scrollView .items",
+                    rivets:         window.rivets
+                },
+
+                list: {
+                    itemHeight:     20,
+                    margin:         { x: 0, y: 0 },
+                    scrollView:     ".scrollView",
+                    itemsContainer: ".scrollView .items",
+                    rivets:         window.rivets
+                }
+            };
+        }
+
+        var scrollerOptsRivets = getScrollerOpts();
+        var scrollerOpts       = getScrollerOpts();
+
+        scrollerOpts.grid.itemTemplate = scrollerOpts.list.itemTemplate = itemTemplate;
+        scrollerOpts.grid.dataSource   = scrollerOpts.list.dataSource   = dataSource;
+
+        function changeView() {
             if(rvScroller)     { rvScroller.unbind(); }
             if(rvBuffView)     { rvBuffView.unbind(); }
             if(rvOverflowView) { rvOverflowView.unbind(); }
@@ -86,14 +125,17 @@
 
             overflowView.innerHTML = "";
             overflowView.appendChild(templateOFV.cloneNode(true));
-            setupScroller(view.type);
-        });
+            setupScroller(view.type, view.useRivets);
+        }
+
+        rivets.adapters['.'].subscribe(view, "type",      changeView);
+        rivets.adapters['.'].subscribe(view, "useRivets", changeView);
 
         function trigger() {
             rvScroller.itemsInView.forEach(function(item) {
-                if(item.idx < rvScroller.liteList._firstVisibleItem) {
+                if(item.idx < liteList._firstVisibleItem) {
                     item.color = "before";
-                } else if(item.idx <= rvScroller.liteList._lastVisibleItem) {
+                } else if(item.idx <= liteList._lastVisibleItem) {
                     item.color = "inView";
                 } else {
                     item.color = "after";
@@ -101,7 +143,7 @@
             });
         }
 
-        function setupScroller(type) {
+        function setupScroller(type, useRivets) {
             scrollView.classList.remove("grid", "list");
             scrollView.classList.add(type);
 
@@ -109,12 +151,15 @@
             overflowView.classList.add(type);
 
 
-            rvScroller = new LiteList.RivetsLiteList(scrollerOpts[type]);
+            rvScroller = useRivets ? new LiteList.RivetsLiteList(scrollerOptsRivets[type])
+                                   : new LiteList(scrollerOpts[type])
+
+            liteList   = rvScroller.liteList || rvScroller;
 
             // Expose it on window so we can mess with it in the console
             window.myList = rvScroller;
 
-            rvBuffView = rivets.bind(buffView, { list: rvScroller.liteList, items: rvScroller.itemsInView }, {
+            rvBuffView = rivets.bind(buffView, { list: liteList, items: liteList.itemsInView }, {
                 binders: {
                     "trigger-first": trigger,
                     "trigger-last":  trigger,
@@ -152,7 +197,7 @@
                 }
             });
 
-            rvOverflowView = rivets.bind(overflowView, {liteList: rvScroller.liteList, items: rvScroller.itemsInView}, {
+            rvOverflowView = rivets.bind(overflowView, {liteList: liteList, items: liteList.itemsInView}, {
                 binders: {
                     top:    function(el, val) { el.style.top    = val + "px"; },
                     left:   function(el, val) { el.style.left   = val + "px"; },
@@ -167,28 +212,15 @@
             var i;
             // Setup for demo
             (function() {
-                var imgUrl = type === "grid" ? "http://placekitten.com/180/180?image="
-                        : "http://placekitten.com/35/35?image="
                 for(i = 0; i < 100; ++i) {
-
                     rvScroller.push({
-                        imgSrc:  imgUrl + (i%16),
-                        name: "Item " + i,
-                        price: "0.00"
+                        val:  i
                     });
                 }
             })();
         }
 
-        setupScroller("grid");
-        // For Demo
-//        setInterval(function() {
-//            rvScroller.push({
-//                imgSrc: "http://placekitten.com/180/180?image=" + (i%16),
-//                name: "Item " + i++,
-//                price: "0.00"
-//            });
-//        }, 2000);
+        setupScroller(view.type, view.useRivets);
     })();
 </script>
 </body>

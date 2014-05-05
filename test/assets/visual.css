@@ -17,7 +17,7 @@
     margin-left: -100px;
     margin-top:  -125px;
     width:       200px;
-    height:      250px;
+    height:      200px;
     border:      1px solid black;
 }
 
@@ -36,4 +36,21 @@
     left:    0;
     right:   0;
     height:  20px;
+}
+
+.listCtrl {
+    top: 60px;
+    left: 0;
+    right: 300px;
+}
+
+.props {
+    right: 0;
+    width: 300px;
+}
+
+.props > div {
+    display: inline-block;
+    position: relative;
+    width: 100%;
 }
