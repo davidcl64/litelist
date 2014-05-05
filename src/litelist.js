@@ -339,7 +339,7 @@ LiteList.prototype.clear = function clear() {
 };
 
 LiteList.prototype.forEach = function forEach(/*fn, thisArg*/) {
-    return this.items.forEach.apply(arguments);
+    return this.items.forEach.apply(this.items, arguments);
 };
 
 LiteList.prototype.remove = function remove(searchIdx) {
