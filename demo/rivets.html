@@ -18,11 +18,11 @@
     <input type="radio" name="listStyle" value="list" rv-checked="view.type">List</input>
 </div>
 <div class="scrollView row col scroll-y">
-    <div class="items row" rv-height="items.height">
+    <div class="items row" rv-height="metrics.height">
         <div class="item" rv-each-item="items" rv-top="item.top" rv-left="item.left">
-            <img rv-src="item.item.imgSrc">
-            <div class="description" rv-text="item.item.name"></div>
-            <div class="price" rv-text="item.item.price"></div>
+            <img rv-src="item.data.imgSrc">
+            <div class="description" rv-text="item.data.name"></div>
+            <div class="price" rv-text="item.data.price"></div>
         </div>
     </div>
 </div>

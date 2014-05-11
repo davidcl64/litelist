@@ -8,8 +8,9 @@ chai.expect();
 chai.should();
 
 // Use the bundled version of the library
-var LiteList = require('../src/bundled');
-var mock     = require('./lib/mock');
+var LiteList   = require('../src/bundled');
+var ViewBuffer = require('../src/viewbuffer');
+var mock       = require('./lib/mock');
 
 describe(["LiteList"], function() {
     var dataSource = {
@@ -91,10 +92,9 @@ describe(["LiteList"], function() {
         it("Should create a LiteList object with all options specified", function() {
             var liteList = new LiteList(fullOpts);
 
-            expect(liteList.itemsInView).to.be.instanceof(Array);
-            expect(liteList.itemsInView.length).to.equal(0);
-            expect(liteList.items).to.be.instanceof(Array);
-            expect(liteList.items.length).to.equal(0);
+            expect(liteList.viewBuffer).to.be.instanceof(ViewBuffer);
+            expect(liteList.viewBuffer.view).to.be.empty;
+            expect(liteList.viewBuffer.data).to.be.empty;
             expect(liteList.itemWidth).to.equal(fullOpts.itemWidth);
             expect(liteList.itemHeight).to.equal(fullOpts.itemHeight);
             expect(liteList.margin).to.deep.equal(fullOpts.margin);
@@ -111,15 +111,15 @@ describe(["LiteList"], function() {
             expect(liteList.itemsPerRow ).to.equal(Math.floor(viewWidth /fullOpts.itemWidth ));
             expect(liteList.itemsPerPage).to.equal(liteList.rowsPerPage * liteList.itemsPerRow);
             expect(liteList.maxBuffer   ).to.equal(liteList.itemsPerPage * 3);
+            expect(liteList.height      ).to.equal(0);
         });
 
         it("Should use expected defaults when only required opts are specified", function() {
             var liteList = new LiteList(requiredOpts);
 
-            expect(liteList.itemsInView).to.be.instanceof(Array);
-            expect(liteList.itemsInView.length).to.equal(0);
-            expect(liteList.items).to.be.instanceof(Array);
-            expect(liteList.items.length).to.equal(0);
+            expect(liteList.viewBuffer).to.be.instanceof(ViewBuffer);
+            expect(liteList.viewBuffer.view).to.be.empty;
+            expect(liteList.viewBuffer.data).to.be.empty;
             expect(liteList.itemWidth).to.equal(0);
             expect(liteList.itemHeight).to.equal(requiredOpts.itemHeight);
             expect(liteList.margin).to.deep.equal({x: 0, y: 0});
@@ -136,38 +136,39 @@ describe(["LiteList"], function() {
             expect(liteList.itemsPerRow ).to.equal(1);
             expect(liteList.itemsPerPage).to.equal(liteList.rowsPerPage * liteList.itemsPerRow);
             expect(liteList.maxBuffer   ).to.equal(liteList.itemsPerPage * 3);
+            expect(liteList.height      ).to.equal(0);
         });
     });
 
-    describe("_createInViewObj()", function() {
-        it("should create an in view object and add it to the dom with all options specified", function() {
-            var liteList  = new LiteList(fullOpts);
-            var item      = {text: 'hello'};
-            var inViewObj;
-
-            liteList.items[0] = item;
-            inViewObj = liteList._createInViewObj({text: 'hello'}, 0);
-            expect(itemsContainer.children.length).to.equal(1);
-        });
-
-        it("should create an in view object and not add it to the dom with required options specified", function() {
-            var liteList  = new LiteList(requiredOpts);
-            var item      = {text: 'hello'};
-            var inViewObj;
-
-            liteList.items[0] = item;
-            inViewObj = liteList._createInViewObj({text: 'hello'}, 0);
-            expect(itemsContainer.children.length).to.equal(0);
-        });
-    });
+//    describe("_createInViewObj()", function() {
+//        it("should create an in view object and add it to the dom with all options specified", function() {
+//            var liteList  = new LiteList(fullOpts);
+//            var item      = {text: 'hello'};
+//            var inViewObj;
+//
+//            liteList.items[0] = item;
+//            inViewObj = liteList._createInViewObj({text: 'hello'}, 0);
+//            expect(itemsContainer.children.length).to.equal(1);
+//        });
+//
+//        it("should create an in view object and not add it to the dom with required options specified", function() {
+//            var liteList  = new LiteList(requiredOpts);
+//            var item      = {text: 'hello'};
+//            var inViewObj;
+//
+//            liteList.items[0] = item;
+//            inViewObj = liteList._createInViewObj({text: 'hello'}, 0);
+//            expect(itemsContainer.children.length).to.equal(0);
+//        });
+//    });
 
     describe("push()", function() {
         it("should be able to push a single item", function() {
             var liteList = new LiteList(fullOpts);
 
             liteList.push({text: "hello"});
-            expect(liteList.itemsInView.length).to.equal(1);
-            expect(liteList.items.length).to.equal(1);
+            expect(liteList.viewBuffer.view.length).to.equal(1);
+            expect(liteList.viewBuffer.data.length).to.equal(1);
             expect(itemsContainer.style.height).to.equal(fullOpts.itemHeight + "px");
         });
 
@@ -175,8 +176,8 @@ describe(["LiteList"], function() {
             var liteList = new LiteList(fullOpts);
 
             liteList.push.apply(liteList, [0,1,2,3,4].map(function(val) { return {text: "hello " + val}; }));
-            expect(liteList.itemsInView.length).to.equal(5);
-            expect(liteList.items.length).to.equal(5);
+            expect(liteList.viewBuffer.view.length).to.equal(5);
+            expect(liteList.viewBuffer.data.length).to.equal(5);
             expect(itemsContainer.style.height).to.equal(fullOpts.itemHeight + "px");
         });
 
@@ -185,8 +186,8 @@ describe(["LiteList"], function() {
             var vals     = new Array(100);
 
             liteList.push.apply(liteList, utils.array.fill.call(vals, function(val) { return {text: "hello " + val}; }));
-            expect(liteList.itemsInView.length).to.equal(100);
-            expect(liteList.items.length).to.equal(100);
+            expect(liteList.viewBuffer.view.length).to.equal(100);
+            expect(liteList.viewBuffer.data.length).to.equal(100);
             expect(itemsContainer.style.height).to.equal((fullOpts.itemHeight * 100/10) + "px");
         });
 
@@ -195,8 +196,8 @@ describe(["LiteList"], function() {
             var vals     = new Array(500);
 
             liteList.push.apply(liteList, utils.array.fill.call(vals, function(val) { return {text: "hello " + val}; }));
-            expect(liteList.itemsInView.length).to.equal(300);
-            expect(liteList.items.length).to.equal(500);
+            expect(liteList.viewBuffer.view.length).to.equal(300);
+            expect(liteList.viewBuffer.data.length).to.equal(500);
             expect(itemsContainer.style.height).to.equal((fullOpts.itemHeight * 500/10) + "px");
         });
 
@@ -215,8 +216,8 @@ describe(["LiteList"], function() {
 
             liteList.push.apply(liteList, utils.array.fill.call(vals, function(val) { return {text: "hello " + val}; }));
             liteList.clear();
-            expect(liteList.itemsInView.length).to.equal(0);
-            expect(liteList.items.length).to.equal(0);
+            expect(liteList.viewBuffer.view.length).to.equal(0);
+            expect(liteList.viewBuffer.data.length).to.equal(0);
             expect(itemsContainer.style.height).to.equal("0px");
         });
     });

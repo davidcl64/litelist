@@ -25,7 +25,7 @@ rivets = window.rivets || require("rivets");
  */
 function RVLiteList(opts) {
     this.liteList    = new LiteList(opts);
-    this.itemsInView = this.liteList.itemsInView;
+    this.viewBuffer  = this.liteList.viewBuffer;
 
     this.rivetsModels = opts.rivetsModels || {};
     this.rivetsOpts   = opts.rivetsOpts   || {};
@@ -62,7 +62,8 @@ function RVLiteList(opts) {
     };
 
     // Overwrite any existing value in the provided model if it exists.
-    this.rivetsModels.items = this.itemsInView;
+    this.rivetsModels.items   = this.viewBuffer.view;
+    this.rivetsModels.metrics = this.liteList;
 
     // use provided rivetsOpts and allow custom top, left and height binders if the caller
     // wants to and knows what they are doing...
