@@ -860,4 +860,187 @@ describe("ViewBuffer", function() {
             });
         });
     });
+
+    describe("remove()", function() {
+        describe("when removing the data item at head", function() {
+            it("should remove the head item when at the beginning", function() {
+                var result = buf.remove(buf.view[buf.head].idx);
+
+                expect(mapIdx (buf.view)).to.deep.equal([0,1,2]);
+                expect(mapData(buf.view)).to.deep.equal([1,2,3]);
+                expect(buf.head).to.equal(0);
+                expect(buf.tail).to.equal(2);
+
+                expect(result.newInView.length).to.equal(1);
+                expect(result.removed.length).to.equal(1);
+                expect(result.updated.length).to.equal(2);
+            });
+
+            it("should remove the head item when at the end", function() {
+                buf.data.push(10);
+                buf.shift(10);
+
+                // Expect head to be at the end of the view and tail to be at
+                // the end of data for this test to be setup properly
+                expect(buf.head).to.equal(buf.size - 1);
+                expect(buf.view[buf.tail].idx).to.equal(buf.data.length - 1);
+
+                var result = buf.remove(buf.view[buf.head].idx);
+
+                expect(result.newInView.length).to.equal(1);
+                expect(result.removed.length).to.equal(1);
+                expect(result.updated.length).to.equal(2);
+
+                expect(mapIdx (buf.view)).to.deep.equal([7, 8, 9]);
+                expect(mapData(buf.view)).to.deep.equal([7, 9, 10]);
+            });
+
+            it("should remove the head item when in mid-view", function() {
+                buf.shift(1); // [3,1,2]
+
+                expect(buf.head).to.equal(1);
+
+                var result = buf.remove(buf.view[buf.head].idx);
+
+                expect(result.newInView.length).to.equal(1);
+                expect(result.removed.length).to.equal(1);
+                expect(result.updated.length).to.equal(2);
+
+                expect(mapIdx (buf.view)).to.deep.equal([2,3,1]);
+                expect(mapData(buf.view)).to.deep.equal([3,4,2]);
+            });
+        });
+
+        describe("when removing the data item at tail", function() {
+            it("should remove an item when tail is at the end of the view", function() {
+                var result = buf.remove(buf.view[buf.tail].idx);
+
+                expect(mapIdx (buf.view)).to.deep.equal([0,1,2]);
+                expect(mapData(buf.view)).to.deep.equal([0,1,3]);
+                expect(buf.head).to.equal(0);
+                expect(buf.tail).to.equal(2);
+
+                expect(result.newInView.length).to.equal(1);
+                expect(result.removed.length).to.equal(1);
+                expect(result.updated.length).to.equal(0);
+            });
+
+            it("should remove an item when tail is at the beginning of the view", function() {
+                buf.shift(1); // [0,1,2] => [3,1,2]
+
+                expect(buf.tail).to.equal(0);
+
+                var result = buf.remove(buf.view[buf.tail].idx); // [1,2] after removal then resize [1,2,4]
+
+                expect(mapIdx (buf.view)).to.deep.equal([1,2,3]);
+                expect(mapData(buf.view)).to.deep.equal([1,2,4]);
+                expect(buf.head).to.equal(0);
+                expect(buf.tail).to.equal(2);
+
+                expect(result.newInView.length).to.equal(1);
+                expect(result.removed.length).to.equal(1);
+                expect(result.updated.length).to.equal(0);
+            });
+
+            it("should remove an item when tail is in the middle of the view", function() {
+                buf.shift(2); // [0,1,2] => [3,1,2] => [3,4,2]
+
+                expect(buf.tail).to.equal(1);
+
+                var result = buf.remove(buf.view[buf.tail].idx); // [3,2] after removal then resize [3,5,2]
+
+                expect(mapIdx (buf.view)).to.deep.equal([3,4,2]);
+                expect(mapData(buf.view)).to.deep.equal([3,5,2]);
+                expect(buf.head).to.equal(2);
+                expect(buf.tail).to.equal(1);
+
+                expect(result.newInView.length).to.equal(1);
+                expect(result.removed.length).to.equal(1);
+                expect(result.updated.length).to.equal(0);
+            });
+        });
+
+        describe("when not removing the head or tail", function() {
+            it("should remove an item when its view index is smaller than head and tail", function() {
+                buf.shift(2); // [0,1,2] => [3,1,2] => [3,4,2]
+
+                expect(buf.head).to.equal(2);
+                expect(buf.tail).to.equal(1);
+
+                var result = buf.remove(buf.view[0].idx); // [4,2] after removal then resize [4,5,2]
+
+                expect(mapIdx (buf.view)).to.deep.equal([3,4,2]);
+                expect(mapData(buf.view)).to.deep.equal([4,5,2]);
+                expect(buf.head).to.equal(2);
+                expect(buf.tail).to.equal(1);
+
+                expect(result.newInView.length).to.equal(1);
+                expect(result.removed.length).to.equal(1);
+                expect(result.updated.length).to.equal(1);
+            });
+
+            it("should remove an item when its view index is between head and tail", function() {
+                expect(buf.head).to.equal(0);
+                expect(buf.tail).to.equal(2);
+
+                var result = buf.remove(buf.view[1].idx); // [0,2] after removal then resize [0,2,3]
+
+                expect(mapIdx (buf.view)).to.deep.equal([0,1,2]);
+                expect(mapData(buf.view)).to.deep.equal([0,2,3]);
+                expect(buf.head).to.equal(0);
+                expect(buf.tail).to.equal(2);
+
+                expect(result.newInView.length).to.equal(1);
+                expect(result.removed.length).to.equal(1);
+                expect(result.updated.length).to.equal(1);
+            });
+
+            it("should remove an item when its view index is larger than head and tail", function() {
+                buf.shift(1); // [3,1,2]
+                expect(buf.head).to.equal(1);
+                expect(buf.tail).to.equal(0);
+
+                var result = buf.remove(buf.view[2].idx); // [3,1] after removal then resize [3,4,1]
+
+                expect(mapIdx (buf.view)).to.deep.equal([2,3,1]);
+                expect(mapData(buf.view)).to.deep.equal([3,4,1]);
+                expect(buf.head).to.equal(2);
+                expect(buf.tail).to.equal(1);
+
+                expect(result.newInView.length).to.equal(1);
+                expect(result.removed.length).to.equal(1);
+                expect(result.updated.length).to.equal(1);
+            });
+        });
+
+        describe("when removing an item that isn't in the view", function() {
+            it("should remove an item when it is before the view", function() {
+                buf.shift(1);
+
+                var result = buf.remove(0);
+
+                expect(mapIdx (buf.view)).to.deep.equal([2,0,1]);
+                expect(mapData(buf.view)).to.deep.equal([3,1,2]);
+                expect(buf.head).to.equal(1);
+                expect(buf.tail).to.equal(0);
+
+                expect(result.newInView.length).to.equal(0);
+                expect(result.removed.length).to.equal(0);
+                expect(result.updated.length).to.equal(3);
+            });
+
+            it("should remove an item when it is after the view", function() {
+                var result = buf.remove(6);
+
+                expect(mapIdx (buf.view)).to.deep.equal([0,1,2]);
+                expect(mapData(buf.view)).to.deep.equal([0,1,2]);
+                expect(buf.head).to.equal(0);
+                expect(buf.tail).to.equal(2);
+
+                expect(result.newInView.length).to.equal(0);
+                expect(result.removed.length).to.equal(0);
+                expect(result.updated.length).to.equal(0);
+            });
+        });
+    });
 });

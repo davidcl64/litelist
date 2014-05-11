@@ -291,8 +291,134 @@ ViewBuffer.prototype.clear = function clear() {
 
     return inViewItems;
 };
+
+/*
+ * Locates an item in the view by its index in data if it exists
+ *
+ * @param idx  - Index in the data array
+ *
+ * @returns    - Index in the view if it is found or -1 if not
+ */
+ViewBuffer.prototype.findDataIndexInView = function findDataIndexInView(idx) {
+    var view = this.view;
+    var len  = view.length;
+    for(var i = 0; i < len; ++i) {
+        if(view[i].idx === idx) {
+            return i;
+        }
     }
+
+    return -1;
 };
 
+/*
+ * Removes an entry from data and adjusts the view if necessary
+ *
+ * @param idx   - index of the item to be removed
+ *
+ * @returns {
+ *      newInView:   If a data item was moved into the view as a result of removing an item, an array
+ *                   containing the newly added item.
+ *      removed:     If the view size was modified as a result of the removal, an array containing
+ *                   the removed item.
+ *      updated:     list of data items that changed positions within the view.
+ * }
+ */
+ViewBuffer.prototype.remove = function remove(idx) {
+    //var idxToRemove  = false;
+    var head         = this.head;
+    var tail         = this.tail;
+    var view         = this.view;
+    var data         = this.data;
+    var viewIdx, from, to, resetViewIdx = false;
+
+    var retVal = {
+        newInView: [],
+        removed:   [],
+        updated:   []
+    };
+    //var i, vLen, from, to, viewIdx, curVal;
+    var added, removed, i;
+
+    idx = +idx; // Make sure it is a number
+
+    // If idx >= the total number of items in the list, throw an error
+    if(idx >= this.data.length) {
+        throw new Error("index out of bounds");
+    }
+
+    // Remove it from items
+    this.data.splice(idx, 1);
+
+    // If greater than the tail IDX, it is not in the view and no adjustments
+    // are necessary to any view items.
+    if(idx > this.view[this.tail].idx) {
+        return retVal;
+    }
+
+    // If less than the head IDX, it is not in the view, but all view items
+    // need to be adjusted back by one to reference the correct data index
+    //
+    // Need to think about whether anything was really updated here.  Idx is
+    // mostly an internal implementation detail and that is all that has been
+    // updated in this case.
+    if(idx < view[head].idx) {
+        view.forEach(function(item) {
+            item.idx = item.idx - 1;
+            retVal.updated.push(item);
+        });
+
+        return retVal;
+    }
+
+    from = viewIdx = this.findDataIndexInView(idx);
+    if(viewIdx === head) {
+        if(head === 0) {
+            to = this.tail = tail - 1;
+        } else if(head === view.length - 1) {
+            this.head = 0;
+            resetViewIdx = true; // viewIdx needs to be set at 0 since it was removed from the tail
+            to = tail;
+        } else {
+            to = tail + view.length - 1;
+        }
+    } else if(viewIdx === tail) {
+        // None of these require modifying idx - the loop to update idx will never be entered
+        if(tail === view.length - 1) {
+            to = this.tail = tail - 1;
+        } else if(tail === 0) {
+            this.tail = view.length - 2;
+            this.head = 0;
+            to = -1;
+        } else {
+            to = this.tail = this.tail - 1;
+            this.head = head - 1;
+        }
+    } else if(viewIdx < head && viewIdx < tail) {
+        to = this.tail = tail - 1;
+        this.head = head - 1;
+    } else if(viewIdx > head && viewIdx < tail) {
+        to = this.tail = tail - 1;
+    } else if(viewIdx > head && viewIdx > tail) {
+        to = tail + view.length - 1;
+    }
+
+    this.size = this.size - 1;
+    removed = view.splice(viewIdx, 1);
+
+    viewIdx = resetViewIdx ? 0 : viewIdx;
+    for(i = viewIdx; i <= to; ++i) {
+        --view[i % view.length].idx;
+        retVal.updated.push(view[i % view.length]);
+    }
+
+    if(data.length > view.length) {
+        added = this.resize(view.length + 1);
+    }
+
+    retVal.removed.push.apply(retVal.removed, removed);
+    retVal.newInView.push.apply(retVal.newInView, added);
+    return retVal;
+};
 
 module.exports = ViewBuffer;
