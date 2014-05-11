@@ -266,8 +266,12 @@ ViewBuffer.prototype.shift = function shift(count) {
 ViewBuffer.prototype.resize = function resize(newSize, head) {
     if(newSize > this.view.length) {
         return _grow.call(this, newSize, head);
-    } else {
+    } else if(newSize < this.view.length) {
         return _shrink.call(this, newSize, head);
+    } else {
+        return [];
+    }
+};
     }
 };
 
