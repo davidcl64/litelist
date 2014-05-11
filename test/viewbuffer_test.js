@@ -1,11 +1,12 @@
 var ViewBuffer = require('../src/viewbuffer');
 
 describe("ViewBuffer", function() {
-    var data = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+    var data;
     var buf;
 
     beforeEach(function() {
-        buf = new ViewBuffer(data, 3);
+        data = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+        buf  = new ViewBuffer(data, 3);
 
         expect(buf.head).to.equal(0);
         expect(buf.tail).to.equal(2);
@@ -61,6 +62,17 @@ describe("ViewBuffer", function() {
                 expect(viewItem.data).to.equal(data[idx]);
             });
         });
+    });
+
+    describe("clear()", function() {
+        it("should reset to empty after calling clear", function() {
+            var buf2 = new ViewBuffer();
+
+            buf.clear();
+
+            expect(buf).to.deep.equal(buf2);
+        });
+
     });
 
     describe("shift()", function() {

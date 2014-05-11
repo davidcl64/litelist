@@ -272,6 +272,25 @@ ViewBuffer.prototype.resize = function resize(newSize, head) {
         return [];
     }
 };
+
+/*
+ * Resets the view buffer back to zero (data and view)
+ *
+ * @returns: list of view items;
+ */
+ViewBuffer.prototype.clear = function clear() {
+    var inViewItems = this.view.slice(0); // make a copy
+
+    // Do this in place to be friendly to libraries (Rivets for example)
+    // that bind to observe changes
+    this.view.splice(0, Number.MAX_VALUE);
+    this.data.splice(0, Number.MAX_VALUE);
+
+    this.head = this.tail = -1;
+    this.size = 0;
+
+    return inViewItems;
+};
     }
 };
 
