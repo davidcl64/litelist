@@ -337,7 +337,7 @@ ViewBuffer.prototype.remove = function remove(idx) {
         removed:   [],
         updated:   []
     };
-    //var i, vLen, from, to, viewIdx, curVal;
+
     var added, removed, i;
 
     idx = +idx; // Make sure it is a number
@@ -419,6 +419,37 @@ ViewBuffer.prototype.remove = function remove(idx) {
     retVal.removed.push.apply(retVal.removed, removed);
     retVal.newInView.push.apply(retVal.newInView, added);
     return retVal;
+};
+
+/*
+ * Iterates through all items currently in the circular buffer starting at the logical
+ * first item rather than at the beginning of the view array.  The callback signature
+ * is similar to Array.forEach, however both the raw index and the logical index are
+ * passed.
+ *
+ * callback is invoked with four arguments:
+ *
+ *      the view item
+ *      the view items logical index
+ *      the view items physical index
+ *      the view
+ */
+ViewBuffer.prototype.forEachInView = function forEachInView(cb, useAsThis) {
+    var view  = this.view;
+    var len   = view.length;
+    var head  = this.head;
+    var tail  = this.tail;
+    var to    = tail < head ? tail + len : tail;
+    var i, curItem, realIdx;
+
+    useAsThis = useAsThis || this;
+
+    for(i = head; i <= to; ++i) {
+        realIdx = i % len;
+        curItem = view[realIdx];
+
+        cb.call(useAsThis, curItem, i - head, realIdx, view);
+    }
 };
 
 module.exports = ViewBuffer;

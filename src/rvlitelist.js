@@ -57,6 +57,10 @@ function RVLiteList(opts) {
         this.liteList.forEach.apply(this.liteList, arguments);
     };
 
+    this.forEachInView = function () {
+        this.liteList.forEachInView.apply(this.liteList, arguments);
+    };
+
     this.remove = function() {
         this.liteList.remove.apply(this.liteList, arguments);
     };

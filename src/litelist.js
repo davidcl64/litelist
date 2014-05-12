@@ -223,7 +223,6 @@ LiteList.prototype._resize = function _resize(done) {
         var shiftAmt = newFirstVisible - this.viewBuffer.view[this.viewBuffer.head].idx - newItemsPerRow;
         this.viewBuffer.shift(shiftAmt);
         this.viewBuffer.view.forEach(function(item) {
-            this._syncViewItem(item);
             this._positionViewItem(item);
         }, this);
     }
@@ -305,6 +304,11 @@ LiteList.prototype.clear = function clear() {
 LiteList.prototype.forEach = function forEach(/*fn, thisArg*/) {
     return this.items.forEach.apply(this.items, arguments);
 };
+
+LiteList.prototype.forEachInView = function () {
+    this.viewBuffer.forEachInView.apply(this.viewBuffer, arguments);
+};
+
 
 LiteList.prototype.remove = function remove(searchIdx) {
     var result = this.viewBuffer.remove(searchIdx);
