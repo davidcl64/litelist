@@ -63,7 +63,14 @@ RVLiteList.prototype = Object.create(LiteList.prototype);
 RVLiteList.prototype.constructor = RVLiteList;
 
 RVLiteList.prototype.unbind = function unbind() {
-    if(this.rvView) { this.rvView.unbind(); }
+    if(this.rvView) {
+        this.rvView.unbind();
+
+        // Pending the resolution of rivets#306  and rivets#307- this will be changed to rebind the view if the
+        // view already exists.  Until that behavior is fixed, we'll go through the overhead of
+        // creating a new view.
+        this.rvView = false;
+    }
 
     LiteList.prototype.unbind.call(this);
 };
