@@ -23,47 +23,23 @@ rivets = window.rivets || require("rivets");
  *                          //  will be mixed in prior to calling rivets.bind
  * }
  */
-function RVLiteList(opts) {
-    this.liteList    = new LiteList(opts);
-    this.viewBuffer  = this.liteList.viewBuffer;
+function RVLiteList(_opts) {
+    var delayBind = _opts.delayBind;
+
+    // Don't let LiteList bind - we'll do that here if delayBind isn't true
+    // Make a copy of the incoming opts so we don't modify the original version and
+    // cause weird bugs if the caller isn't expecting the incoming value to change.
+    var opts = {};
+
+    // We are only touching a simple property, so it is ok to duplicate any complex
+    // properties here rather than doing a true deep copy.
+    Object.keys(_opts).forEach(function(key) { opts[key] = _opts[key]; });
+    opts.delayBind = true;
+
+    LiteList.call(this, opts);
 
     this.rivetsModels = opts.rivetsModels || {};
     this.rivetsOpts   = opts.rivetsOpts   || {};
-
-    this.unbind = function unbind() {
-        if(this.rvView) { this.rvView.unbind(); }
-
-        this.liteList.unbind();
-    };
-
-    function _bind() {
-        this.rvView = rivets.bind(this.liteList.view, this.rivetsModels, this.rivetsOpts);
-    }
-
-    this.bind = function bind() {
-        _bind.call(this);
-        this.liteList.bind();
-    };
-
-    this.push = function() {
-        this.liteList.push.apply(this.liteList, arguments);
-    };
-
-    this.clear = function() {
-        this.liteList.clear();
-    };
-
-    this.forEach = function() {
-        this.liteList.forEach.apply(this.liteList, arguments);
-    };
-
-    this.forEachInView = function () {
-        this.liteList.forEachInView.apply(this.liteList, arguments);
-    };
-
-    this.remove = function() {
-        this.liteList.remove.apply(this.liteList, arguments);
-    };
 
     // Overwrite any existing value in the provided model if it exists.
     this.rivetsModels.items   = this.viewBuffer.view;
@@ -77,10 +53,32 @@ function RVLiteList(opts) {
     this.rivetsOpts.binders.height = this.rivetsOpts.binders.height || function(el, val) { el.style.height = val + "px"; };
 
     // Just take care of ourselves during construction so we don't double bind
-    if(!opts.delayBind) {
-        _bind.call(this);
+    if(!delayBind) {
+        this.bind();
     }
 }
+
+// subclass extends superclass
+RVLiteList.prototype = Object.create(LiteList.prototype);
+RVLiteList.prototype.constructor = RVLiteList;
+
+RVLiteList.prototype.unbind = function unbind() {
+    if(this.rvView) { this.rvView.unbind(); }
+
+    LiteList.prototype.unbind.call(this);
+};
+
+RVLiteList.prototype.bind = function bind() {
+    // Pending the resolution of rivets#306 - this will be changed to rebind the view if the
+    // view already exists.  Until that behavior is fixed, we'll go through the overhead of
+    // creating a new view.  Caller beware...
+    this.rvView = rivets.bind(this.view, this.rivetsModels, this.rivetsOpts);
+
+    LiteList.prototype.bind.call(this);
+};
+
+
+
 
 module.exports = RVLiteList;
 
