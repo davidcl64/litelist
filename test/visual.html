@@ -25,17 +25,17 @@
 
 <div class="listCtrl col">
     <div class="overflowOn row col">
-        <div class="items row" rv-height="items.height" rv-top="liteList.scrollTop | scrollTop">
+        <div class="items row" rv-height="metrics.height" rv-top="liteList.scrollTop | scrollTop">
             <div class="item" rv-each-item="items" rv-top="item.top" rv-left="item.left">
-                <div>{item.item.val}[{item.idx}]</div>
+                <div>{item.data.val}[{item.idx}]</div>
             </div>
         </div>
     </div>
 
     <div class="scrollView row col scroll-y">
-        <div class="items row" rv-height="items.height">
+        <div class="items row" rv-height="metrics.height">
             <div class="item" rv-each-item="items" rv-top="item.top" rv-left="item.left">
-                <div rv-text="item.item.val"></div>
+                <div rv-text="item.data.val"></div>
             </div>
         </div>
     </div>
@@ -132,7 +132,7 @@
         rivets.adapters['.'].subscribe(view, "useRivets", changeView);
 
         function trigger() {
-            rvScroller.itemsInView.forEach(function(item) {
+            rvScroller.viewBuffer.view.forEach(function(item) {
                 if(item.idx < liteList._firstVisibleItem) {
                     item.color = "before";
                 } else if(item.idx <= liteList._lastVisibleItem) {
@@ -159,7 +159,7 @@
             // Expose it on window so we can mess with it in the console
             window.myList = rvScroller;
 
-            rvBuffView = rivets.bind(buffView, { list: liteList, items: liteList.itemsInView }, {
+            rvBuffView = rivets.bind(buffView, { list: liteList, items: liteList.viewBuffer.view, metrics: liteList }, {
                 binders: {
                     "trigger-first": trigger,
                     "trigger-last":  trigger,
@@ -197,7 +197,7 @@
                 }
             });
 
-            rvOverflowView = rivets.bind(overflowView, {liteList: liteList, items: liteList.itemsInView}, {
+            rvOverflowView = rivets.bind(overflowView, {liteList: liteList, items: liteList.viewBuffer.view, metrics: liteList}, {
                 binders: {
                     top:    function(el, val) { el.style.top    = val + "px"; },
                     left:   function(el, val) { el.style.left   = val + "px"; },

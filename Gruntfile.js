@@ -21,30 +21,24 @@ module.exports = function(grunt) {
         browserify: {
             bundled: {
                 // alias will both alias and expose require
-                options: { bundleOptions: { standalone: "LiteList" }, external: ["rivets", "tween.js"] },
+                options: { bundleOptions: { standalone: "LiteList", debug: true }, external: ["rivets", "tween.js"] },
                 files:   { 'dist/<%= distOpts.bundled %>': ['./src/bundled.js'] }
             },
             liteList: {
-                options: { bundleOptions: { standalone: "LiteList" } },
+                options: { bundleOptions: { standalone: "LiteList", debug: true } },
                 files:   { 'dist/<%= distOpts.core %>': ['./src/litelist.js'] }
             },
             rvLiteList: {
-                options: { bundleOptions: { standalone: "RivetsLiteList" }, external: ["rivets"] },
+                options: { bundleOptions: { standalone: "RivetsLiteList", debug: true }, external: ["rivets"] },
                 files:   { 'dist/<%= distOpts.rivets %>': ['./src/rvlitelist.js'] }
             },
             scroll: {
-                options: { bundleOptions: { standalone: "LiteListScroll" }, external: ["tween.js"] },
+                options: { bundleOptions: { standalone: "LiteListScroll", debug: true }, external: ["tween.js"] },
                 files:   { 'dist/<%= distOpts.scroll %>': ['./src/scroll.js'] }
             },
             tests: {
                 options: {
-                    alias: [
-                        './src/litelist:LiteList',
-                        './src/scroll:LiteListScroll',
-                        'rivets:rivets',
-                        'tween.js:tween.js',
-                        'tween.js:TWEEN'
-                    ]
+                    bundleOptions: { debug: true }
                 },
                 files:   { 'test/suite.bundle.js': ['./test/tests.js'] }
             }
@@ -99,7 +93,7 @@ module.exports = function(grunt) {
                 livereload: reloadPort
             },
             js: {
-                files: ['src/*.js', 'test/tests.js'],
+                files: ['src/*.js', 'test/*.js'],
                 options: {
                     livereload: reloadPort
                 },

@@ -1,3 +1,5 @@
+var ViewBuffer = require('./viewbuffer');
+
 /*
  * LiteList
  *
@@ -17,8 +19,7 @@
  * }
  */
 function LiteList(opts) {
-    this.itemsInView     = [];
-    this.items           = [];
+    this.viewBuffer      = new ViewBuffer();
     this.itemWidth       = opts.itemWidth || 0;
     this.itemHeight      = opts.itemHeight;
     this.margin          = opts.margin || { x: 0, y: 0 };
@@ -35,6 +36,7 @@ function LiteList(opts) {
     this.itemsPerRow     = 0;
     this.itemsPerPage    = 0;
     this.maxBuffer       = 0;
+    this.height          = 0;
 
     // Get the container elements
     this.view            = opts.scrollView;
@@ -48,17 +50,13 @@ function LiteList(opts) {
     // datasource providers to aid in tracking.
     this._id = 0;
 
-    // Keeps track of the old first visible portion of the list
-    this._oldStart = 0;
-    this._oldEnd   = 0;
-
     // If not passed a page selector, assume it's the first child
     if(!this.itemsContainer) {
         this.itemsContainer = this.view.children[0];
     }
 
-    // _ensureVisible is used in requestAnimationFrame - bind it to this
-    this._ensureVisible = this._ensureVisible.bind(this);
+    // _updateView is used in requestAnimationFrame - bind it to this
+    this._updateView = this._updateView.bind(this);
 
     // Invoked as a result of event listeners - bind them to this
     this._scrollHandler = this._scrollHandler.bind(this);
@@ -81,17 +79,28 @@ function LiteList(opts) {
     this._requestTick();
 }
 
-LiteList.prototype._createInViewObj = function createInViewObj(item, idx) {
-    var row = Math.floor(idx/this.itemsPerRow);
-    var col = (idx % this.itemsPerRow);
+LiteList.prototype._calcViewMetrics = function calcViewMetrics() {
+    this.clientHeight    = this.view.clientHeight;
+    this.clientWidth     = this.view.clientWidth;
+    this.rowsPerPage     = Math.ceil (this.clientHeight / (this.itemHeight + this.margin.y));
+    this.itemsPerRow     = this.itemWidth ? Math.floor(this.clientWidth  / (this.itemWidth  + this.margin.x)) : 1;
+    this.itemsPerPage    = this.rowsPerPage * this.itemsPerRow;
+    this.maxBuffer       = this.itemsPerPage * 3;
+};
 
-    var newViewObj = {
-        id:   this._id++,
-        top:  row * this.itemHeight + row * this.margin.y,
-        left: col * this.itemWidth  + col * this.margin.x,
-        idx:  idx,
-        item: item
-    };
+LiteList.prototype._calcDocHeight = function calcDocHeight() {
+    var row = Math.ceil(this.viewBuffer.data.length/this.itemsPerRow);
+    var newHeight = row * this.itemHeight + row * this.margin.y;
+
+    if(newHeight !== this.height) {
+        this.itemsContainer.style.height = newHeight + "px";
+        this.height = newHeight;
+    }
+    return this.height;
+};
+
+LiteList.prototype._initInViewItem = function _initInViewItem(item) {
+    item.id   = this._id++;
 
     // If we were given an item template, we need to add a clone
     // to the dom
@@ -103,33 +112,20 @@ LiteList.prototype._createInViewObj = function createInViewObj(item, idx) {
         }
 
         this.itemsContainer.appendChild(newNode);
-        newViewObj.el = newNode;
+        item.el = newNode;
         if(this.dataSource && this.dataSource.bind) {
-            this.dataSource.bind(newViewObj.id, newNode);
+            this.dataSource.bind(item.id, newNode);
         }
     }
 
-    return newViewObj;
+    return item;
 };
 
-LiteList.prototype._calcViewMetrics = function calcViewMetrics() {
-    this.clientHeight    = this.view.clientHeight;
-    this.clientWidth     = this.view.clientWidth;
-    this.rowsPerPage     = Math.ceil (this.clientHeight / (this.itemHeight + this.margin.y));
-    this.itemsPerRow     = this.itemWidth ? Math.floor(this.clientWidth  / (this.itemWidth  + this.margin.x)) : 1;
-    this.itemsPerPage    = this.rowsPerPage * this.itemsPerRow;
-    this.maxBuffer       = this.itemsPerPage * 3;
-};
-
-LiteList.prototype._calcDocHeight = function calcDocHeight() {
-    var row = Math.ceil(this.items.length/this.itemsPerRow);
-    var newHeight = row * this.itemHeight + row * this.margin.y;
-
-    if(newHeight !== this.itemsInView.height) {
-        this.itemsContainer.style.height = newHeight + "px";
-        this.itemsInView.height = newHeight;
+LiteList.prototype._syncViewItem = function syncViewItem(viewItem) {
+    // If we have a dataSource
+    if(this.dataSource && this.dataSource.sync) {
+        this.dataSource.sync(viewItem.id, viewItem.el, viewItem.idx, viewItem.data);
     }
-    return this.itemsInView.height;
 };
 
 LiteList.prototype._positionViewItem = function positionViewItem(viewItem, force) {
@@ -155,152 +151,121 @@ LiteList.prototype._positionViewItem = function positionViewItem(viewItem, force
             viewItem.el.style.left = left + "px";
         }
     }
-
-    // this is ok for just an instance check
-    if(force || (viewItem.item !== this.items[idx])) {
-        viewItem.item = this.items[idx];
-
-        // If we have a dataSource
-        if(this.dataSource && this.dataSource.sync) {
-            this.dataSource.sync(viewItem.id, viewItem.el, idx, this.items[idx]);
-        }
-    }
 };
 
-LiteList.prototype.__ensureVisible = function _ensureVisible() {
-    var percentInViewStart = ((this.scrollTop) / (this.itemsInView.height));
-    var percentInViewEnd   = ((this.scrollTop + this.clientHeight) / (this.itemsInView.height));
+LiteList.prototype._ensureVisible = function _ensureVisible(done) {
+    var percentInViewStart = ((this.scrollTop) / (this.height));
+    var percentInViewEnd   = ((this.scrollTop + this.clientHeight) / (this.height));
 
-    if(percentInViewStart < 0) { percentInViewStart = 0; }
-    var newStart = Math.floor(percentInViewStart * this.items.length);
-    var newEnd   = Math.ceil (percentInViewEnd   * this.items.length);
-    var i;
-    var viewItem;
-    var newIdx;
-
-    this._firstVisibleItem = Math.floor(this.scrollTop / (this.itemHeight + this.margin.y)) * this.itemsPerRow;
-    this._lastVisibleItem  = Math.ceil ((this.scrollTop + this.clientHeight)/(this.itemHeight + this.margin.y)) * this.itemsPerRow;
+    var oldStart, newStart, oldEnd, newEnd, i, viewItem;
 
     if(this.direction < 0) {
-        for (i = this._oldEnd; i > newEnd + this.itemsPerRow; --i) {
-            viewItem = this.itemsInView[i % this.itemsInView.length];
+        oldEnd = this.viewBuffer.view[this.viewBuffer.tail].idx;
+        newEnd = Math.ceil (percentInViewEnd   * this.viewBuffer.data.length);
 
-            newIdx = i - this.itemsInView.length;
+        for (i = oldEnd; i > newEnd + this.itemsPerRow; --i) {
+            viewItem = this.viewBuffer.shift(-1)[0];
 
-            if (newIdx >= 0) {
-                viewItem.idx = newIdx;
+            if (viewItem) {
+                this._syncViewItem(viewItem);
                 this._positionViewItem(viewItem);
             }
         }
-        this._oldEnd = i;
-        this._oldStart   = Math.max(this._oldEnd - this.itemsInView.length, 0);
-    } else {
-        for(i = this._oldStart; i < newStart - this.itemsPerRow; ++i) {
-            viewItem = this.itemsInView[i % this.itemsInView.length];
+    } else if(this.direction > 0) {
+        oldStart = this.viewBuffer.view[this.viewBuffer.head].idx;
+        newStart = Math.floor(percentInViewStart * this.viewBuffer.data.length);
 
-            newIdx = i + this.itemsInView.length;
-            if(newIdx < this.items.length) {
-                viewItem.idx = newIdx;
+        for(i = oldStart; i < newStart - this.itemsPerRow; ++i) {
+            viewItem = this.viewBuffer.shift(1)[0];
+
+            if(viewItem) {
+                this._syncViewItem(viewItem);
                 this._positionViewItem(viewItem);
             }
         }
-        this._oldStart   = i === 0 ? 0 : i - 1;
-        this._oldEnd     = Math.min(this._oldStart + this.itemsInView.length, this.items.length - 1);
     }
 
-    this.dirtyResize = false;
-    this.ticking     = false;
+    done();
 };
 
-LiteList.prototype._ensureVisible = function ensureVisible() {
-    if(this.dirtyResize) {
-        var newHeight    = this.view.clientHeight;
-        var newWidth     = this.view.clientWidth;
+LiteList.prototype._resize = function _resize(done) {
+    var newHeight    = this.view.clientHeight;
+    var newWidth     = this.view.clientWidth;
 
-        var newRowsPerPage     = Math.ceil (newHeight / (this.itemHeight + this.margin.y));
-        var newItemsPerRow     = this.itemWidth ? Math.floor(newWidth  / (this.itemWidth  + this.margin.x)) : 1;
+    var newRowsPerPage     = Math.ceil (newHeight / (this.itemHeight + this.margin.y));
+    var newItemsPerRow     = this.itemWidth ? Math.floor(newWidth  / (this.itemWidth  + this.margin.x)) : 1;
 
-        var i, removed, inViewObj;
-        if(newRowsPerPage !== this.rowsPerPage || newItemsPerRow !== this.itemsPerRow) {
-            this._calcViewMetrics();
-            this._calcDocHeight();
+    var removed; //, inViewObj;
+    if(newRowsPerPage !== this.rowsPerPage || newItemsPerRow !== this.itemsPerRow) {
+        this._calcViewMetrics();
+        this._calcDocHeight();
 
-            if(this.itemsInView.length > this.maxBuffer) {
-                removed = this.itemsInView.splice(0, this.itemsInView.length - this.maxBuffer);
+        var percentInView = this._firstVisibleItem / this.viewBuffer.data.length;
+        this.scrollTop = this.view.scrollTop = Math.floor(this.height * percentInView);
+        var newFirstVisible = Math.floor(this.scrollTop / (this.itemHeight + this.margin.y)) * newItemsPerRow;
 
-                if(this.dataSource && this.dataSource.unbind) {
-                    removed.forEach(function(inViewItem) {
-                        this.dataSource.unbind(inViewItem.id, inViewItem.el);
-                        this.itemsContainer.removeChild(inViewItem.el);
-                    }.bind(this));
-                }
-            } else if(this.itemsInView.length < this.maxBuffer) {
-                var newItems = [-1, 0];
-                for(i = this.itemsInView.length; i < this.maxBuffer; ++i) {
-                    inViewObj = this._createInViewObj({}, 0);
-                    newItems.push(inViewObj);
-                    this._positionViewItem(inViewObj, true);
-                }
+        if (this.viewBuffer.view.length > this.maxBuffer) {
+            removed = this.viewBuffer.resize(this.maxBuffer);
 
-                this.itemsInView.splice.apply(this.itemsInView, newItems);
+            if (this.dataSource && this.dataSource.unbind) {
+                removed.forEach(function (inViewItem) {
+                    this.dataSource.unbind(inViewItem.id, inViewItem.el);
+                    this.itemsContainer.removeChild(inViewItem.el);
+                }, this);
             }
-
-            for(i = 0; i < this.itemsInView.length; ++i) {
-                this.itemsInView[i].idx = i;
-                this._positionViewItem(this.itemsInView[i]);
-            }
-
-            this._oldStart = 0;
+        } else if (this.viewBuffer.view.length < this.maxBuffer) {
+            this.viewBuffer.resize(Math.min(this.maxBuffer, this.viewBuffer.data.length))
+                .forEach(function (item) {
+                    this._initInViewItem(item);
+                }, this);
         }
+
+        var shiftAmt = newFirstVisible - this.viewBuffer.view[this.viewBuffer.head].idx - newItemsPerRow;
+        this.viewBuffer.shift(shiftAmt);
+        this.viewBuffer.view.forEach(function(item) {
+            this._positionViewItem(item);
+        }, this);
     }
 
-    this.__ensureVisible();
+    done();
+};
+
+LiteList.prototype._updateView = function _updateView() {
+    var done = function() {
+        this._firstVisibleItem = Math.floor(this.scrollTop / (this.itemHeight + this.margin.y)) * this.itemsPerRow;
+        this._lastVisibleItem  = Math.ceil ((this.scrollTop + this.clientHeight)/(this.itemHeight + this.margin.y)) * this.itemsPerRow;
+
+        this.dirtyResize = false;
+        this.ticking     = false;
+        this.direction   = 0;
+    }.bind(this);
+
+    if(this.dirtyResize) {
+        this._resize(done);
+    } else {
+        this._ensureVisible(done);
+    }
 };
 
 LiteList.prototype._requestTick = function requestTick() {
     if(!this.ticking) {
-        window.requestAnimationFrame(this._ensureVisible);
+        this.ticking = true;
+        window.requestAnimationFrame(this._updateView);
     }
-    this.ticking = true;
 };
 
 LiteList.prototype.push = function push() {
     var args    = Array.prototype.slice.call(arguments);
-    var i       = 0;
-    var argsIdx = this.items.length;
-    var inViewObj;
-    var needsReset = false;
-    var maxIdx  = this.itemsLength;
 
-    if(this.itemsInView.length >= this.maxBuffer) {
-        maxIdx = this.itemsInView.reduce(function(prev, cur) {
-            return prev.idx > cur.idx ? prev : cur;
-        }, this.itemsInView[0] || {idx: 0}).idx;
+    this.viewBuffer.data.push.apply(this.viewBuffer.data, args);
 
-        if(maxIdx === this.items.length - 1) { needsReset = true; }
-    }
+    var newInView = this.viewBuffer.resize(Math.min(this.maxBuffer, this.viewBuffer.data.length));
 
-    this.items.push.apply(this.items, args);
-    while(this.itemsInView.length < this.maxBuffer && i < args.length) {
-        inViewObj = this._createInViewObj(args[i], argsIdx);
-        this.itemsInView.push(inViewObj);
-        this._positionViewItem(inViewObj, true);
-
-        i = i + 1;
-        argsIdx = argsIdx + 1;
-    }
-
-    // Nuclear option for now.  This can be optimized for difference use cases:
-    // - at end of list/end of list visible
-    // - end of list not visible
-    // - remove from DOM/display: none then render/replace?
-    if(needsReset) {
-        for(i = 0; i < this.itemsInView.length; ++i) {
-            this.itemsInView[i].idx = i;
-            this._positionViewItem(this.itemsInView[i]);
-        }
-        this._oldStart = 0;
-    }
+    newInView.forEach(function(inViewData) {
+        this._initInViewItem(inViewData);
+        this._syncViewItem(inViewData);
+        this._positionViewItem(inViewData, true);
+    }, this);
 
     this._calcDocHeight();
     this._requestTick();
@@ -322,18 +287,16 @@ LiteList.prototype.clear = function clear() {
     var callUnbind = (this.dataSource && this.dataSource.unbind);
 
     this.view.scrollTop = this.scrollTop = 0;
-    this._oldStart = this._oldEnd = 0;
+
+    var itemsInView = this.viewBuffer.clear();
 
     // If we were given an item template, we need remove any nodes we've added
     if(this.itemTemplate) {
-        this.itemsInView.forEach(function(item) {
+        itemsInView.forEach(function(item) {
             if(item.el)    { this.itemsContainer.removeChild(item.el); }
             if(callUnbind) { this.dataSource.unbind(item.id, item.el); }
         }.bind(this));
     }
-
-    this.itemsInView.splice(0, Number.MAX_VALUE);
-    this.items      .splice(0, Number.MAX_VALUE);
 
     this._calcDocHeight();
 };
@@ -342,57 +305,36 @@ LiteList.prototype.forEach = function forEach(/*fn, thisArg*/) {
     return this.items.forEach.apply(this.items, arguments);
 };
 
+LiteList.prototype.forEachInView = function () {
+    this.viewBuffer.forEachInView.apply(this.viewBuffer, arguments);
+};
+
+
 LiteList.prototype.remove = function remove(searchIdx) {
-    var idxToRemove = false;
+    var result = this.viewBuffer.remove(searchIdx);
 
-    // If searchIdx >= the total number of items in the list, throw an error
-    if(searchIdx >= this.items.length) {
-        throw new Error("index out of bounds");
-    }
-
-    // Remove it from items
-    this.items.splice(searchIdx, 1);
-
-    this.itemsInView.forEach(function(val, idx) {
-        if(val.idx >= searchIdx) {
-
-            // If it is the last item in the list, the view buffer
-            // entry needs to move back to the front of the current
-            // buffer
-            if(val.idx >= this.items.length) {
-                val.idx = val.idx - this.itemsInView.length;
-
-                // If less than zero, that means the view buffer needs
-                // to shrink.
-                if(val.idx < 0) {
-                    val = false;
-                    idxToRemove = idx;
-                }
-            }
-
-            if(val) {
-                this._positionViewItem(val, true);
-            }
-        }
+    result.newInView.forEach(function(item) {
+        this._initInViewItem(item);
+        this._syncViewItem(item);
+        this._positionViewItem(item);
     }, this);
 
-    // Shrink the view buffer if necessary.
-    if(idxToRemove) {
-        var item = this.itemsInView[idxToRemove];
-
-        // If we are managing the dom, need to remove the actual element
-        if(this.itemTemplate) {
+    if(this.itemTemplate || this.dataSource) {
+        result.removed.forEach(function(item) {
             if(this.dataSource && this.dataSource.unbind) {
-                this.dataSource.unbind(item.id, item.el);
+                this.datasource.unbind(item.id, item.el);
             }
 
-            this.itemsContainer.removeChild(item.el);
-        }
-
-        this.itemsInView.splice(idxToRemove,1);
+            if(this.itemTemplate) {
+                this.itemsContainer.removeChild(item.el);
+            }
+        }, this);
     }
 
-    // Update doc height
+    result.updated.forEach(function(item) {
+        this._positionViewItem(item);
+    }, this);
+
     this._calcDocHeight();
 };
 

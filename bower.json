@@ -10,7 +10,8 @@
   ],
   "dependencies": {
     "raf.js": "~0.0.3",
-    "tweenjs": "*"
+    "tweenjs": "*",
+    "rivets": "~0.6.8"
   },
   "devDependencies": {
     "rivets": "~0.6.7"
