@@ -110,6 +110,7 @@ While the basic implementation if functional and seems to work well on various m
 needs to occur (both performance and functional).  It is very likely that as implementation proceeds the exposed API and
  internal implementation will change significantly.
 
+- Verify browser compatibility and document any shims needed for older browsers
 - Provide a simple, performant mechanism for lazy loading of the list.
 - Expose generated scroll events from scroller (for mobile use case)
 - Expose better ways to populate and maintain the list of items
