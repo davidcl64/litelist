@@ -12,7 +12,7 @@ if(typeof window === 'undefined') { window = {}; }
 // make it easier to bundle/or not and to use with requirejs...
 TWEEN = window.TWEEN || require("tween.js");
 
-function Scroll(viewSelector, listener) {
+function Scroll(viewOrSelector, listener) {
     var view,
         min, max, offset, reference, pressed,
         velocity, frame, timestamp, ticker,
@@ -126,7 +126,7 @@ function Scroll(viewSelector, listener) {
         return false;
     }
 
-    view = document.querySelector(viewSelector);
+    view = typeof viewOrSelector === 'string' ? document.querySelector(viewOrSelector) : viewOrSelector;
     if (typeof window.ontouchstart !== 'undefined') {
         view.addEventListener('touchstart', tap);
         view.addEventListener('touchmove', drag);
