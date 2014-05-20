@@ -69,10 +69,6 @@ function Scroll(viewOrSelector, listener) {
             t0.stop();
             t0 = false;
         }
-
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
     }
 
     function drag(e) {
@@ -86,8 +82,6 @@ function Scroll(viewOrSelector, listener) {
             }
         }
         e.preventDefault();
-        e.stopPropagation();
-        return false;
     }
 
     function release(e) {
@@ -120,10 +114,6 @@ function Scroll(viewOrSelector, listener) {
             t0.start();
             window.requestAnimationFrame(tick);
         }
-
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
     }
 
     view = typeof viewOrSelector === 'string' ? document.querySelector(viewOrSelector) : viewOrSelector;
