@@ -84,7 +84,7 @@ function Scroll(viewOrSelector, listener) {
         e.preventDefault();
     }
 
-    function release(e) {
+    function release(/*e*/) {
         pressed = false;
 
         clearInterval(ticker);
