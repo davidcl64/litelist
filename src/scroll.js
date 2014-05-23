@@ -117,11 +117,13 @@ function Scroll(viewOrSelector, listener) {
     }
 
     view = typeof viewOrSelector === 'string' ? document.querySelector(viewOrSelector) : viewOrSelector;
-    if (typeof window.ontouchstart !== 'undefined') {
-        view.addEventListener('touchstart', tap);
-        view.addEventListener('touchmove', drag);
-        view.addEventListener('touchend', release);
-    }
+    this.bind = function attach() {
+        if (typeof window.ontouchstart !== 'undefined') {
+            view.addEventListener('touchstart', tap);
+            view.addEventListener('touchmove', drag);
+            view.addEventListener('touchend', release);
+        }
+    };
 
     this.unbind = function detach() {
         if (typeof window.ontouchstart !== 'undefined') {
@@ -135,6 +137,8 @@ function Scroll(viewOrSelector, listener) {
     offset = min = 0;
     pressed = false;
     timeConstant = 2000; // ms
+
+    this.bind();
 }
 
 

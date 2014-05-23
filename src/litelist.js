@@ -274,6 +274,8 @@ LiteList.prototype.push = function push() {
 LiteList.prototype.bind = function bind() {
     this.view.addEventListener("scroll", this._scrollHandler);
     window.addEventListener("resize", this._resizeHandler);
+
+    if(this.scroll) { this.scroll.bind(); }
 };
 
 LiteList.prototype.unbind = function unbind() {
