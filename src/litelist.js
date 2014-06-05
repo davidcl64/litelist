@@ -300,6 +300,8 @@ LiteList.prototype.clear = function clear() {
         }.bind(this));
     }
 
+    if(this.scroll) { this.scroll.reset(); }
+
     this._calcDocHeight();
 };
 

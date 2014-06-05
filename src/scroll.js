@@ -133,11 +133,15 @@ function Scroll(viewOrSelector, listener) {
         }
     };
 
-    max = parseInt(window.getComputedStyle(view).height, 10) - innerHeight;
-    offset = min = 0;
-    pressed = false;
+    this.reset = function reset() {
+        max = parseInt(window.getComputedStyle(view).height, 10) - innerHeight;
+        offset = min = 0;
+        pressed = false;
+    };
+
     timeConstant = 2000; // ms
 
+    this.reset();
     this.bind();
 }
 
