@@ -15,7 +15,7 @@ TWEEN = window.TWEEN || require("tween.js");
 function Scroll(viewOrSelector, listener) {
     var view,
         min, max, offset, reference, pressed,
-        velocity, frame, timestamp, ticker,
+        velocity, frame, timestamp, ticker, tweenTicker,
         amplitude, target, timeConstant, innerHeight;
 
     var p0 = { y: 0 };
@@ -103,7 +103,7 @@ function Scroll(viewOrSelector, listener) {
                 .easing(TWEEN.Easing.Quintic.Out)
                 .onUpdate(function() {
                     scroll(p0.y);
-                    window.requestAnimationFrame(tick);
+                    tweenTicker = window.requestAnimationFrame(tick);
                 })
                 .onComplete(function() {
                     scroll(p0.y);
@@ -112,7 +112,7 @@ function Scroll(viewOrSelector, listener) {
                 });
 
             t0.start();
-            window.requestAnimationFrame(tick);
+            tweenTicker = window.requestAnimationFrame(tick);
         }
     }
 
@@ -137,6 +137,8 @@ function Scroll(viewOrSelector, listener) {
         max = parseInt(window.getComputedStyle(view).height, 10) - innerHeight;
         offset = min = 0;
         pressed = false;
+        clearInterval(ticker);
+        window.cancelAnimationFrame(tweenTicker);
     };
 
     timeConstant = 2000; // ms
