@@ -249,8 +249,7 @@ LiteList.prototype._updateView = function _updateView() {
 
 LiteList.prototype._requestTick = function requestTick() {
     if(!this.ticking) {
-        this.ticking = true;
-        window.requestAnimationFrame(this._updateView);
+        this.ticking = window.requestAnimationFrame(this._updateView);
     }
 };
 
@@ -301,6 +300,8 @@ LiteList.prototype.clear = function clear() {
     }
 
     if(this.scroll) { this.scroll.reset(); }
+    window.cancelAnimationFrame(this.ticking);
+    this.ticking = 0;
 
     this._calcDocHeight();
 };
