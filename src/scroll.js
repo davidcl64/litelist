@@ -1,3 +1,4 @@
+// borrowed heavily from [ariya/kinetic](https://github.com/ariya/kinetic)
 var TWEEN;
 
 require("raf.js");
