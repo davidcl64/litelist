@@ -28,6 +28,7 @@ function LiteList(opts) {
     this.scrollTop       = 0;
     this.dirtyResize     = true;
     this.ticking         = false;
+    this.direction       = 0;
 
     // View Metrics
     this.clientHeight    = 0;
@@ -37,6 +38,10 @@ function LiteList(opts) {
     this.itemsPerPage    = 0;
     this.maxBuffer       = 0;
     this.height          = 0;
+
+    // internal state
+    this._firstVisibleItem = 0;
+    this._lastVisibleItem  = 0;
 
     // Get the container elements
     this.view            = opts.scrollView;
